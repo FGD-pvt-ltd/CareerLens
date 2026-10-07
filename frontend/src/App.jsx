@@ -12,11 +12,15 @@ import './index.css';
 export default function App() {
   const [activeView, setActiveView] = useState('home'); // 'home' | 'dashboard'
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentCandidate, setCurrentCandidate] = useState(null);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleCompleteAudit = () => {
+  const handleCompleteAudit = (profileData) => {
+    if (profileData) {
+      setCurrentCandidate(profileData);
+    }
     setActiveView('dashboard');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -116,10 +120,13 @@ export default function App() {
 
       {/* Main Content: Focused, Spacious & Lag-Free */}
       {activeView === 'dashboard' ? (
-        <DashboardView onBackToStory={() => {
-          setActiveView('home');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }} />
+        <DashboardView 
+          candidateProfile={currentCandidate}
+          onBackToStory={() => {
+            setActiveView('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }} 
+        />
       ) : (
         <main>
           {/* ==================================================

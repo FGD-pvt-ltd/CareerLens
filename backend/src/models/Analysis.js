@@ -1,85 +1,124 @@
 const mongoose = require('mongoose');
 
-const SkillGapSchema = new mongoose.Schema(
+const AnalysisResultSchema = new mongoose.Schema(
   {
-    skill: { type: String, required: true },
-    importance: { type: String, enum: ['critical', 'recommended', 'optional'], default: 'critical' },
-    currentStatus: { type: String, default: 'missing' },
-    notes: { type: String, default: '' },
+    readinessScore: {
+      type: Number,
+      default: null, // Null indicates pending AI analysis / non-invented score
+    },
+    scoreBreakdown: {
+      type: mongoose.Schema.Types.Mixed,
+      default: () => ({}),
+    },
+    skills: {
+      type: Array,
+      default: () => [],
+    },
+    strengths: {
+      type: Array,
+      default: () => [],
+    },
+    gaps: {
+      type: Array,
+      default: () => [],
+    },
+    roadmap: {
+      type: Array,
+      default: () => [],
+    },
+  },
+  { _id: false }
+);
+
+const AIMetadataSchema = new mongoose.Schema(
+  {
+    serviceVersion: {
+      type: String,
+      default: '',
+    },
+    model: {
+      type: String,
+      default: '',
+    },
+    analyzedAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
+const TargetRoleSchema = new mongoose.Schema(
+  {
+    roleId: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    roleName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    slug: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    requirements: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
   },
   { _id: false }
 );
 
 const AnalysisSchema = new mongoose.Schema(
   {
-    candidate: {
+    candidateId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'CandidateProfile',
       required: true,
       index: true,
     },
     targetRole: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'JobRole',
+      type: TargetRoleSchema,
+      default: () => ({}),
     },
-    targetRoleName: {
+    status: {
       type: String,
-      default: '',
-      trim: true,
-    },
-    readinessScore: {
-      type: Number,
-      default: null, // Null indicates pending AI analysis / non-invented score
-    },
-    technicalScore: {
-      type: Number,
-      default: null,
-    },
-    projectScore: {
-      type: Number,
-      default: null,
-    },
-    evidenceScore: {
-      type: Number,
-      default: null,
-    },
-    roleAlignmentScore: {
-      type: Number,
-      default: null,
-    },
-    consistencyScore: {
-      type: Number,
-      default: null,
-    },
-    verifiedStrengths: [
-      {
-        type: String,
+      enum: {
+        values: ['pending', 'processing', 'completed', 'failed'],
+        message: '{VALUE} is not a valid analysis status. Must be pending, processing, completed, or failed.',
       },
-    ],
-    skillGaps: [SkillGapSchema],
-    recommendations: [
-      {
-        type: String,
-      },
-    ],
-    roadmap: {
-      type: mongoose.Schema.Types.Mixed,
-      default: null,
-    },
-    analysisStatus: {
-      type: String,
-      enum: ['pending', 'in_progress', 'completed', 'failed'],
       default: 'pending',
       index: true,
     },
-    evidenceReferences: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Evidence',
-      },
-    ],
+    result: {
+      type: AnalysisResultSchema,
+      default: () => ({}),
+    },
+    aiMetadata: {
+      type: AIMetadataSchema,
+      default: () => ({}),
+    },
+    error: {
+      type: String,
+      default: null,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
+
+// Backward-compatibility alias virtuals
+AnalysisSchema.virtual('candidate').get(function () {
+  return this.candidateId;
+});
+
+AnalysisSchema.virtual('analysisStatus').get(function () {
+  return this.status;
+});
 
 module.exports = mongoose.model('Analysis', AnalysisSchema);

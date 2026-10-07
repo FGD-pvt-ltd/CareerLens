@@ -1,34 +1,43 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+// 1. Load environment variables
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
+
 const app = require('./app');
-const env = require('./config/env');
-const { connectDB } = require('./config/db');
+const { connectDB, disconnectDB } = require('./config/db');
 const { seedJobRoles } = require('./services/roleService');
 
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+
 async function startServer() {
-  // Connect to Database (graceful with in-memory fallback)
-  await connectDB();
+  try {
+    // 2. Connect to MongoDB (with automatic fallback to embedded engine if daemon unavailable)
+    await connectDB();
+    await seedJobRoles();
 
-  // Seed standard industry role benchmarks
-  await seedJobRoles();
-
-  const server = app.listen(env.PORT, () => {
-    console.log(`==============================================`);
-    console.log(` ProfiQ Backend Server running on port ${env.PORT}`);
-    console.log(` Environment: ${env.NODE_ENV}`);
-    console.log(` Health Check: http://localhost:${env.PORT}/api/health`);
-    console.log(`==============================================`);
-  });
-
-  // Graceful shutdown handling
-  process.on('SIGTERM', () => {
-    console.log('SIGTERM received. Shutting down gracefully...');
-    server.close(() => {
-      console.log('Server closed.');
+    // 3. Start Express server only after database connection succeeds
+    const server = app.listen(PORT, () => {
+      console.log(`[Server] ProfiQ Backend Server running on port ${PORT}`);
+      console.log(`[Server] Health Check: http://localhost:${PORT}/api/health`);
     });
-  });
 
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  });
+    const shutdown = async () => {
+      console.log('[Server] Gracefully shutting down ProfiQ server...');
+      server.close(async () => {
+        await disconnectDB();
+        console.log('[Server] Disconnected and shutdown complete.');
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+  } catch (error) {
+    console.error(`[Server Error] Unable to start server: ${error.message}`);
+    process.exit(1);
+  }
 }
 
 startServer();

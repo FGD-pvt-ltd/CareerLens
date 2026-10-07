@@ -2,32 +2,58 @@ const env = require('../config/env');
 const { extractGithubUsername } = require('../utils/validators');
 
 const GITHUB_API_BASE = 'https://api.github.com';
+const API_TIMEOUT_MS = 10000;
 
 /**
  * Common request helper for official GitHub REST API v3
  */
-async function fetchGithubApi(endpoint) {
+async function fetchGithubApi(endpoint, customHeaders = {}) {
+  const token = env.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
   const headers = {
     Accept: 'application/vnd.github.v3+json',
     'User-Agent': 'ProfiQ-Career-Readiness-Analyzer/1.0.0',
+    ...customHeaders,
   };
 
-  if (env.GITHUB_TOKEN) {
-    headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
+  if (token && typeof token === 'string' && token.trim()) {
+    headers.Authorization = `Bearer ${token.trim()}`;
   }
 
-  const response = await fetch(`${GITHUB_API_BASE}${endpoint}`, { headers });
+  let response;
+  try {
+    response = await fetch(`${GITHUB_API_BASE}${endpoint}`, {
+      headers,
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
+  } catch (netErr) {
+    if (netErr.name === 'TimeoutError') {
+      const err = new Error('GitHub API request timed out.');
+      err.statusCode = 504;
+      throw err;
+    }
+    const err = new Error(`Failed to reach GitHub API: ${netErr.message}`);
+    err.statusCode = 502;
+    throw err;
+  }
 
   if (response.status === 404) {
-    const err = new Error('GitHub profile or resource not found.');
+    const err = new Error('GitHub profile not found');
     err.statusCode = 404;
     throw err;
   }
 
   if (response.status === 403 || response.status === 429) {
     const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+    const resetTimestamp = response.headers.get('x-ratelimit-reset');
     if (rateLimitRemaining === '0' || response.status === 429) {
-      const err = new Error('GitHub API rate limit exceeded. Please configure a valid GITHUB_TOKEN in .env.');
+      let resetInfo = '';
+      if (resetTimestamp) {
+        const resetDate = new Date(parseInt(resetTimestamp, 10) * 1000);
+        resetInfo = ` Reset scheduled at ${resetDate.toLocaleTimeString()}.`;
+      }
+      const err = new Error(
+        `GitHub API rate limit exceeded. Please configure a valid GITHUB_TOKEN in .env or try again later.${resetInfo}`
+      );
       err.statusCode = 429;
       err.code = 'RATE_LIMIT_EXCEEDED';
       throw err;
@@ -48,192 +74,205 @@ async function fetchGithubApi(endpoint) {
 }
 
 /**
- * Generate structured fallback profile if GitHub rate limit is exceeded on unauthenticated IP
+ * Fetch README content for a repository where publicly available
+ * Returns raw markdown text or empty string on 404/failure
  */
-function generateFallbackGithubData(username) {
-  const mockRepos = [
-    {
-      id: 101,
-      name: `${username}-portfolio`,
-      fullName: `${username}/${username}-portfolio`,
-      description: 'Personal developer showcase and career projects',
-      htmlUrl: `https://github.com/${username}/${username}-portfolio`,
-      language: 'JavaScript',
-      stars: 3,
-      forks: 1,
-      isFork: false,
-      createdAt: '2024-01-15T00:00:00Z',
-      updatedAt: '2024-09-01T00:00:00Z',
-      pushedAt: '2024-09-01T00:00:00Z',
-      topics: ['portfolio', 'react'],
-      hasIssues: true,
-      openIssuesCount: 0,
-    },
-    {
-      id: 102,
-      name: 'fullstack-web-app',
-      fullName: `${username}/fullstack-web-app`,
-      description: 'REST API backend service built with Node.js and Express',
-      htmlUrl: `https://github.com/${username}/fullstack-web-app`,
-      language: 'JavaScript',
-      stars: 5,
-      forks: 2,
-      isFork: false,
-      createdAt: '2024-03-10T00:00:00Z',
-      updatedAt: '2024-10-01T00:00:00Z',
-      pushedAt: '2024-10-01T00:00:00Z',
-      topics: ['nodejs', 'express', 'api'],
-      hasIssues: true,
-      openIssuesCount: 1,
-    },
-  ];
-
-  return {
-    username,
-    name: username,
-    bio: 'Software Developer (Offline dev fallback)',
-    avatarUrl: `https://avatars.githubusercontent.com/u/9919?v=4`,
-    profileUrl: `https://github.com/${username}`,
-    publicRepos: mockRepos.length,
-    followers: 2,
-    following: 5,
-    accountCreatedAt: '2023-01-01T00:00:00Z',
-    languageBreakdown: { JavaScript: 2 },
-    repositories: mockRepos,
-    normalizedEvidences: [
-      {
-        sourceType: 'github',
-        sourceUrl: `https://github.com/${username}`,
-        skill: 'JavaScript',
-        evidence: `Authored 2 repository/repositories with JavaScript as primary language.`,
-        strength: 'medium',
-        metadata: { language: 'JavaScript', repositoryCount: 2, isDevFallback: true },
-        timestamp: new Date(),
-      },
-    ],
-    rateLimitNotice: 'Live GitHub request exceeded public unauthenticated limit. Add GITHUB_TOKEN to .env for 5,000 live requests/hr.',
+async function fetchRepoReadme(owner, repo) {
+  const token = env.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
+  const headers = {
+    Accept: 'application/vnd.github.raw',
+    'User-Agent': 'ProfiQ-Career-Readiness-Analyzer/1.0.0',
   };
+
+  if (token && typeof token === 'string' && token.trim()) {
+    headers.Authorization = `Bearer ${token.trim()}`;
+  }
+
+  try {
+    const response = await fetch(
+      `${GITHUB_API_BASE}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/readme`,
+      {
+        headers,
+        signal: AbortSignal.timeout(6000),
+      }
+    );
+
+    if (response.ok) {
+      const text = await response.text();
+      // Cap at 15,000 characters to keep document storage clean and fast
+      return text.length > 15000 ? text.slice(0, 15000) + '\n\n...[truncated for AI pipeline]' : text;
+    }
+    return '';
+  } catch {
+    return '';
+  }
 }
 
 /**
- * Fetch and analyze a candidate's GitHub presence via official REST API
+ * Fetch language breakdown for a repository
  */
-async function fetchAndAnalyzeGithubProfile(input) {
-  const username = extractGithubUsername(input);
+async function fetchRepoLanguages(owner, repo) {
+  try {
+    const data = await fetchGithubApi(`/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/languages`);
+    if (data && typeof data === 'object') {
+      return Object.keys(data);
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetch and analyze a candidate's GitHub profile data via official GitHub REST API
+ * Strictly collects public profile, repositories, README context, language summary, and activity.
+ * No AI evaluation or readiness scores are performed here.
+ */
+async function fetchAndAnalyzeGithubProfile(usernameInput) {
+  const username = extractGithubUsername(usernameInput);
   if (!username) {
-    const err = new Error(`Invalid GitHub username or URL: '${input}'`);
+    const err = new Error(`Invalid GitHub username or profile URL: '${usernameInput}'`);
     err.statusCode = 400;
     throw err;
   }
 
-  let user;
-  let rawRepos;
+  // 1. Fetch User Profile
+  const user = await fetchGithubApi(`/users/${encodeURIComponent(username)}`);
 
+  // 2. Fetch Public Repositories (sorted by recent push, limit to top 15)
+  let rawRepos = [];
   try {
-    // 1. Fetch User Profile
-    user = await fetchGithubApi(`/users/${encodeURIComponent(username)}`);
-
-    // 2. Fetch Public Repositories (sorted by recent push/update)
-    rawRepos = await fetchGithubApi(`/users/${encodeURIComponent(username)}/repos?sort=pushed&per_page=15`);
-  } catch (apiError) {
-    // If rate limited without a GITHUB_TOKEN during development, provide normalized fallback
-    if (apiError.code === 'RATE_LIMIT_EXCEEDED' && !env.GITHUB_TOKEN) {
-      console.warn(`[GitHubService] Public rate limit reached. Using normalized fallback for '${username}'. Configure GITHUB_TOKEN in .env for live API.`);
-      return generateFallbackGithubData(username);
+    rawRepos = await fetchGithubApi(
+      `/users/${encodeURIComponent(username)}/repos?sort=pushed&per_page=15&type=all`
+    );
+  } catch (repoErr) {
+    if (repoErr.statusCode === 404) {
+      rawRepos = [];
+    } else {
+      throw repoErr;
     }
-    throw apiError;
   }
 
-  // 3. Process and normalize repository artifacts
-  const repositories = (Array.isArray(rawRepos) ? rawRepos : []).map((repo) => ({
-    id: repo.id,
-    name: repo.name,
-    fullName: repo.full_name,
-    description: repo.description || '',
-    htmlUrl: repo.html_url,
-    language: repo.language || null,
-    stars: repo.stargazers_count,
-    forks: repo.forks_count,
-    isFork: repo.fork,
-    createdAt: repo.created_at,
-    updatedAt: repo.updated_at,
-    pushedAt: repo.pushed_at,
-    topics: repo.topics || [],
-    hasIssues: repo.has_issues,
-    openIssuesCount: repo.open_issues_count,
-  }));
+  const safeRepos = Array.isArray(rawRepos) ? rawRepos : [];
 
-  // 4. Aggregate primary technologies and activity
-  const languageCounts = {};
-  repositories.forEach((r) => {
-    if (r.language) {
-      languageCounts[r.language] = (languageCounts[r.language] || 0) + 1;
+  // Sort candidate repositories: prioritize own original repos, then by stars and recent push
+  const sortedRepos = [...safeRepos].sort((a, b) => {
+    if (a.fork !== b.fork) return a.fork ? 1 : -1; // non-forks first
+    if ((b.stargazers_count || 0) !== (a.stargazers_count || 0)) {
+      return (b.stargazers_count || 0) - (a.stargazers_count || 0);
+    }
+    return new Date(b.pushed_at || 0) - new Date(a.pushed_at || 0);
+  });
+
+  // Limit processing to at most 10 repositories to stay efficient
+  const targetRepos = sortedRepos.slice(0, 10);
+
+  // 3. For the top 3 standout non-fork repositories, fetch README context
+  // Select top 3 non-fork repos with description or stars or activity
+  const standoutRepos = targetRepos.filter((r) => !r.fork).slice(0, 3);
+  const readmePromises = standoutRepos.map(async (r) => {
+    const readmeContent = await fetchRepoReadme(username, r.name);
+    return { name: r.name, readme: readmeContent };
+  });
+
+  const readmeResults = await Promise.all(readmePromises);
+  const readmeMap = {};
+  readmeResults.forEach((item) => {
+    readmeMap[item.name] = item.readme;
+  });
+
+  // 4. Normalize Repositories
+  const repositories = targetRepos.map((repo) => {
+    const langs = [];
+    if (repo.language) {
+      langs.push(repo.language);
+    }
+
+    return {
+      name: repo.name,
+      fullName: repo.full_name || `${username}/${repo.name}`,
+      description: repo.description || '',
+      url: repo.html_url,
+      homepage: repo.homepage || '',
+      primaryLanguage: repo.language || null,
+      languages: langs,
+      topics: Array.isArray(repo.topics) ? repo.topics : [],
+      stars: repo.stargazers_count || 0,
+      forks: repo.forks_count || 0,
+      createdAt: repo.created_at ? new Date(repo.created_at) : null,
+      updatedAt: repo.updated_at ? new Date(repo.updated_at) : null,
+      pushedAt: repo.pushed_at ? new Date(repo.pushed_at) : null,
+      defaultBranch: repo.default_branch || 'main',
+      archived: Boolean(repo.archived),
+      fork: Boolean(repo.fork),
+      readme: readmeMap[repo.name] || '',
+    };
+  });
+
+  // 5. Aggregate Language Summary (across all fetched repositories)
+  const languageSummary = {};
+  safeRepos.forEach((repo) => {
+    if (repo.language && typeof repo.language === 'string') {
+      languageSummary[repo.language] = (languageSummary[repo.language] || 0) + 1;
     }
   });
 
-  // 5. Build standardized evidence objects
-  const normalizedEvidences = [];
-  const nonForkRepos = repositories.filter((r) => !r.isFork);
+  // 6. Aggregate Activity / Consistency Data
+  let lastActiveDate = null;
+  let recentRepositoryCount = 0;
+  let totalStars = 0;
+  let totalForks = 0;
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
-  // Evidence for primary languages
-  for (const [lang, count] of Object.entries(languageCounts)) {
-    let strength = 'low';
-    if (count >= 4) strength = 'high';
-    else if (count >= 2) strength = 'medium';
+  safeRepos.forEach((repo) => {
+    totalStars += repo.stargazers_count || 0;
+    totalForks += repo.forks_count || 0;
 
-    normalizedEvidences.push({
-      sourceType: 'github',
-      sourceUrl: `https://github.com/${username}?tab=repositories&q=&type=&language=${encodeURIComponent(lang.toLowerCase())}`,
-      skill: lang,
-      evidence: `Authored ${count} repository/repositories with ${lang} as the primary language on GitHub.`,
-      strength,
-      metadata: {
-        language: lang,
-        repositoryCount: count,
-        source: 'github-repositories',
-      },
-      timestamp: new Date(),
-    });
-  }
-
-  // Evidence for standout projects (non-forks with description/stars)
-  const standoutProjects = nonForkRepos
-    .filter((r) => r.description && (r.stars > 0 || r.topics.length > 0))
-    .slice(0, 5);
-
-  standoutProjects.forEach((proj) => {
-    normalizedEvidences.push({
-      sourceType: 'github',
-      sourceUrl: proj.htmlUrl,
-      skill: proj.language || 'Project Development',
-      evidence: `Built project '${proj.name}': ${proj.description} (${proj.stars} stars, updated ${proj.updatedAt ? proj.updatedAt.slice(0, 10) : 'recently'})`,
-      strength: proj.stars >= 5 ? 'high' : 'medium',
-      metadata: {
-        repoName: proj.name,
-        stars: proj.stars,
-        topics: proj.topics,
-      },
-      timestamp: new Date(),
-    });
+    const activityDate = repo.pushed_at || repo.updated_at;
+    if (activityDate) {
+      const d = new Date(activityDate);
+      if (!lastActiveDate || d > lastActiveDate) {
+        lastActiveDate = d;
+      }
+      if (d >= ninetyDaysAgo) {
+        recentRepositoryCount++;
+      }
+    }
   });
 
+  // If user has updated profile recently, consider user updated date as fallback
+  if (!lastActiveDate && user.updated_at) {
+    lastActiveDate = new Date(user.updated_at);
+  }
+
+  // 7. Assemble normalized ProfiQ GitHub data object
   return {
     username: user.login,
+    profileUrl: user.html_url,
     name: user.name || user.login,
     bio: user.bio || '',
-    avatarUrl: user.avatar_url,
-    profileUrl: user.html_url,
-    publicRepos: user.public_repos,
-    followers: user.followers,
-    following: user.following,
-    accountCreatedAt: user.created_at,
-    languageBreakdown: languageCounts,
+    avatarUrl: user.avatar_url || '',
+    company: user.company || '',
+    location: user.location || '',
+    publicRepositoryCount: typeof user.public_repos === 'number' ? user.public_repos : safeRepos.length,
+    followers: user.followers || 0,
+    following: user.following || 0,
+    accountCreatedAt: user.created_at ? new Date(user.created_at) : null,
     repositories,
-    normalizedEvidences,
+    languageSummary,
+    activity: {
+      lastActiveDate,
+      recentRepositoryCount,
+      totalStars,
+      totalForks,
+    },
+    analyzedAt: new Date(),
   };
 }
 
 module.exports = {
   fetchGithubApi,
+  fetchRepoReadme,
+  fetchRepoLanguages,
   fetchAndAnalyzeGithubProfile,
 };

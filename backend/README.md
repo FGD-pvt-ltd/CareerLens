@@ -1,19 +1,25 @@
-# ProfiQ — Backend REST API Service
+# ProfiQ — Backend Services
 
-> **ProfiQ Backend** — Core server-side API, candidate profile management, evidence normalization, and orchestration layer for the AI-Powered Employability and Career Readiness Analyzer.
+> **ProfiQ Backend** — Core server-side API, candidate profile management, secure document ingestion pipeline, and data layer for the AI-Powered Employability and Career Readiness Analyzer.
 
 ---
 
-## 📌 Backend Purpose
+## 📌 Milestones Overview
 
-The ProfiQ Backend is responsible for:
-1. Ingesting student candidate credentials, public links (GitHub, portfolio, competitive coding), and resume documents.
-2. Securely storing uploaded PDF resumes and performing text/entity extraction.
-3. Querying the official GitHub REST API to retrieve and normalize public development artifacts (repositories, languages, stars, commit history).
-4. Normalizing multi-source candidate evidence into a consistent internal schema ready for downstream AI scoring.
-5. Identifying objective skill gaps against standardized industry role benchmarks (`JobRole`).
-6. Generating personalized 4-phase milestone roadmaps.
-7. Providing a modular foundation ready to connect cleanly with the Gemini AI Engine.
+### 1. Candidate Data Hub
+- **MongoDB Connection**: Connects to MongoDB via Mongoose with clean connection logging and failover timeout.
+- **CandidateProfile Data Model**: Single document schema capturing student academic details, college, education, experience, skills, projects, certifications, coding/professional profiles, GitHub links, resume/cv documents, and target role.
+- **`POST /api/profiles`**: Ingests candidate profile data, validates inputs, and persists to the `candidateprofiles` collection.
+- **`GET /api/profiles/:id`**: Retrieves candidate profile JSON by MongoDB ObjectId with 400 (invalid ID) and 404 (not found) error handling.
+- **`GET /api/health`**: Verifies backend server health status.
+
+### 2. Resume / CV Document Pipeline
+- **Secure File Ingestion**: Accepts PDF files up to 5 MB using `multipart/form-data`.
+- **Validation**: Strict PDF MIME type and file extension validation. Rejects missing files, non-PDF formats, and oversized uploads with HTTP 400.
+- **Safe Server-Side Storage**: Stores uploaded documents under `backend/uploads/` using secure, collision-free server-generated filenames (`doc-<timestamp>-<hash>.pdf`). Never exposes physical filesystem paths to API clients.
+- **PDF Text Extraction**: Extracts machine-readable text safely using `pdf-parse`. Marks `extractionStatus` as `"completed"` or `"failed"` without crashing.
+- **Document Replacement Policy**: Enforces at most one active document per `documentType` (`resume` or `cv`). Uploading a new resume replaces the previous one.
+- **AI Engine Readiness**: Exposes `getCandidateDocumentText(profileId)` returning structured `{ resumeText, cvText }` for future AI consumption (Aman's module).
 
 ---
 
@@ -23,54 +29,30 @@ The ProfiQ Backend is responsible for:
 backend/
 ├── src/
 │   ├── config/
-│   │   ├── db.js                   # Mongoose connection with resilient dev fallback
-│   │   └── env.js                  # Centralized environment variable loader
-│   │
+│   │   ├── db.js                   # Mongoose connection with error handling
+│   │   └── env.js                  # Centralized environment loader
 │   ├── controllers/
-│   │   ├── profileController.js    # Candidate profile CRUD & resume ingestion
-│   │   ├── analysisController.js   # Analysis pipeline & readiness report retrieval
-│   │   ├── roadmapController.js    # Career progression milestones
-│   │   └── githubController.js     # GitHub profile & repository evidence analyzer
-│   │
-│   ├── routes/
-│   │   ├── profileRoutes.js        # /api/profiles endpoints
-│   │   ├── analysisRoutes.js       # /api/analysis endpoints
-│   │   ├── roadmapRoutes.js        # /api/roadmap endpoints
-│   │   └── githubRoutes.js         # /api/github endpoints
-│   │
-│   ├── models/
-│   │   ├── User.js                 # Authentication & account model
-│   │   ├── CandidateProfile.js     # Student profile, links, resume text, projects
-│   │   ├── Skill.js                # Claimed & verified skills taxonomy
-│   │   ├── Evidence.js             # Multi-source normalized proof artifacts
-│   │   ├── Analysis.js             # Evaluation run with readiness breakdown & gaps
-│   │   └── JobRole.js              # Standardized industry benchmarks & skill weights
-│   │
-│   ├── services/
-│   │   ├── resumeService.js        # PDF text parsing & keyword extraction
-│   │   ├── githubService.js        # Official GitHub API v3 connector & normalizer
-│   │   ├── portfolioService.js     # Web portfolio & coding profile evidence
-│   │   ├── profileService.js       # Profile database operations & persistence
-│   │   ├── roleService.js          # Industry role benchmarks & seed loader
-│   │   ├── analysisService.js      # Evidence normalization & gap detection
-│   │   └── roadmapService.js       # Milestone generation & learning priorities
-│   │
+│   │   ├── profileController.js    # Profile creation and retrieval handlers
+│   │   └── documentController.js   # Resume / CV upload, list, details, and raw text
 │   ├── middleware/
-│   │   ├── errorHandler.js         # Centralized Express error handler
-│   │   ├── uploadMiddleware.js     # Multer PDF storage & 5MB size validator
-│   │   └── validationMiddleware.js # Input sanitizers & MongoDB ObjectId validators
-│   │
-│   ├── utils/
-│   │   ├── response.js             # Standardized success/error JSON responders
-│   │   └── validators.js           # Regex & URL validation helpers
-│   │
+│   │   ├── errorHandler.js         # Centralized error handler (CastError, Multer, etc.)
+│   │   └── uploadMiddleware.js     # Multer storage, PDF validation, 5MB limit
+│   ├── models/
+│   │   └── CandidateProfile.js     # Unified schema with 13 sections + documents array
+│   ├── routes/
+│   │   ├── profileRoutes.js        # /api/profiles routes
+│   │   └── documentRoutes.js       # /api/profiles/:id/documents sub-routes
+│   ├── services/
+│   │   ├── profileService.js       # Database persistence operations
+│   │   └── resumeService.js        # PDF text extraction and AI text combiner
 │   ├── app.js                      # Express configuration, CORS, and route mounting
-│   └── server.js                   # Database initialization, seeding & server listen
-│
-├── uploads/                        # Temporary uploaded PDF resumes (.gitkeep)
-├── .env                            # Active environment variables (git-ignored)
+│   └── server.js                   # Server bootstrap: Env -> Connect DB -> Start Server
+├── uploads/                        # Server-side uploaded PDF documents (.gitkeep)
+├── test-candidate-hub.js           # Candidate Data Hub verification test suite
+├── test-document-pipeline.js       # Document Pipeline verification test suite
 ├── .env.example                    # Environment variable template
-├── package.json                    # Backend dependencies & lifecycle scripts
+├── .env                            # Active environment variables (git-ignored)
+├── package.json                    # Dependencies and scripts
 └── README.md                       # Service documentation
 ```
 
@@ -78,115 +60,192 @@ backend/
 
 ## 🔐 Environment Variables
 
-Copy `.env.example` to `.env`:
+Create or update `backend/.env` based on `backend/.env.example`:
 
-```bash
-cp .env.example .env
+```env
+PORT=5000
+MONGODB_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER/profiq
+FRONTEND_URL=http://localhost:5173
 ```
 
-| Variable | Description | Default / Example |
-| :--- | :--- | :--- |
-| `PORT` | HTTP server listening port | `5000` |
-| `MONGODB_URI` | MongoDB connection URI string | `mongodb://localhost:27017/profiq` |
-| `GITHUB_TOKEN` | GitHub Personal Access Token (for higher API rate limits) | `optional` |
-| `GEMINI_API_KEY` | Google Gemini API key (for future AI Engine modules) | `optional` |
-| `FRONTEND_URL` | Client origin allowed by CORS | `http://localhost:5173` |
-| `NODE_ENV` | Runtime environment mode | `development` |
+> **Note**: Never commit `.env` or files inside `uploads/` to version control. Both are included in `.gitignore`.
 
 ---
 
-## 🛠️ Setup & Running
+## 🛠️ Installation & Running
 
-### Prerequisites
-- Node.js v18+ (Node v20+ recommended)
-- npm v9+
-- MongoDB (Local instance or MongoDB Atlas URI; resilient in-memory fallback enabled for offline development)
-
-### Installation
+### 1. Install Dependencies
 ```bash
 cd backend
 npm install
 ```
 
-### Run in Development Mode (with Hot Reload)
+### 2. Run Verification Test Suites
+```bash
+# Run all test suites
+npm test
+
+# Run Candidate Data Hub tests only
+npm run test:hub
+
+# Run Document Pipeline tests only
+npm run test:pipeline
+```
+
+### 3. Start Development Server (with Hot Reload)
 ```bash
 npm run dev
 ```
 
-### Run in Production Mode
+### 4. Start Production Server
 ```bash
 npm start
 ```
 
-### Seed Job Role Benchmarks
-```bash
-npm run seed
-```
-
 ---
 
-## 📡 REST API Endpoints
-
-All responses adhere to standardized JSON formats:
-- **Success**: `{ "success": true, "data": ... }`
-- **Error**: `{ "success": false, "error": "..." }`
+## 📡 API Endpoints
 
 ### 1. Health Check
-- `GET /api/health`
-  - Returns service operational status and version.
+- **Endpoint**: `GET /api/health`
+- **Response** (HTTP 200 OK):
+```json
+{
+  "success": true,
+  "message": "ProfiQ backend is running"
+}
+```
+
+---
 
 ### 2. Candidate Profiles
-- `POST /api/profiles`
-  - Create a new candidate profile.
-  - Body: `{ "name": "Alex Mercer", "email": "alex@example.com", "githubUrl": "https://github.com/alex", "targetRole": "Frontend Developer" }`
-- `GET /api/profiles/:id`
-  - Retrieve candidate profile by MongoDB ObjectId.
-- `PUT /api/profiles/:id`
-  - Update candidate profile fields.
-- `DELETE /api/profiles/:id`
-  - Delete candidate profile.
 
-### 3. Resume Upload & Text Extraction
-- `POST /api/profiles/:id/resume`
-  - Multipart form-data with file field `resume`.
-  - Accepts PDF documents up to 5MB.
-  - Automatically extracts plain text, identifies skills, and safely stores file metadata without exposing server filesystem paths.
-
-### 4. GitHub Evidence Analysis
-- `POST /api/github/analyze`
-  - Body: `{ "username": "torvalds" }` or `{ "url": "https://github.com/torvalds" }`
-  - Uses the official GitHub REST API to analyze repositories, languages, stars, and activity into standardized evidence items.
-
-### 5. Profile Analysis (Evidence Normalization)
-- `POST /api/analysis`
-  - Body: `{ "candidateId": "...", "targetRole": "Software Engineer" }`
-  - Aggregates multi-source evidence (resume, GitHub, portfolio).
-  - Detects objective skill gaps against benchmark role requirements.
-  - Creates analysis with `status: "pending"` and `readinessScore: null` (no artificial/fake scores).
-- `GET /api/analysis/:id`
-  - Returns complete analysis record, skill gaps, recommendations, and roadmap reference.
-
-### 6. Career Readiness Roadmap
-- `GET /api/roadmap/:analysisId`
-  - Returns structured 4-phase milestone roadmap tailored to identified skill gaps and target role.
-
----
-
-## 🗄️ MongoDB Setup
-
-1. **Local MongoDB**: Install MongoDB Community Server and start the daemon at `mongodb://localhost:27017`.
-2. **MongoDB Atlas**: Create a free cloud cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas) and set `MONGODB_URI` in `.env`:
-   ```env
-   MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/profiq?retryWrites=true&w=majority
-   ```
-3. **Resilient Dev Mode**: If MongoDB is not reachable, the server gracefully activates its in-memory storage layer so development and testing continue uninterrupted.
-
----
-
-## 🐙 GitHub API Setup
-
-To prevent GitHub API rate limits (60 requests/hr for unauthenticated IP), generate a GitHub Personal Access Token at [github.com/settings/tokens](https://github.com/settings/tokens) (no special scopes needed for public repos) and configure:
-```env
-GITHUB_TOKEN=ghp_yourPersonalAccessTokenHere
+#### Create Profile
+- **Endpoint**: `POST /api/profiles`
+- **Headers**: `Content-Type: application/json`
+- **Response** (HTTP 201 Created):
+```json
+{
+  "success": true,
+  "message": "Candidate profile created successfully",
+  "data": {
+    "profile": {
+      "_id": "6703ee54fa315a6760592b01",
+      "basicInfo": { "name": "Test Candidate", "email": "test@example.com" },
+      "documents": []
+    }
+  }
+}
 ```
-This increases the limit to 5,000 requests per hour.
+
+#### Retrieve Profile by ID
+- **Endpoint**: `GET /api/profiles/:id`
+- **Response** (HTTP 200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "profile": {
+      "_id": "6703ee54fa315a6760592b01",
+      "basicInfo": { "name": "Test Candidate" },
+      "documents": []
+    }
+  }
+}
+```
+
+---
+
+### 3. Resume / CV Document Pipeline
+
+#### Upload Resume or CV
+- **Endpoint**: `POST /api/profiles/:id/documents`
+- **Content-Type**: `multipart/form-data`
+- **Form Fields**:
+  - `file`: PDF file (max 5 MB)
+  - `documentType`: `"resume"` or `"cv"`
+- **Response** (HTTP 201 Created):
+```json
+{
+  "success": true,
+  "message": "Document uploaded and processed successfully",
+  "data": {
+    "document": {
+      "_id": "6703f191fa315a6760592b05",
+      "documentType": "resume",
+      "fileName": "my_resume.pdf",
+      "mimeType": "application/pdf",
+      "fileSize": 128450,
+      "extractionStatus": "completed",
+      "uploadedAt": "2026-10-07T11:55:00.000Z"
+    }
+  }
+}
+```
+*(Notice: Local filesystem path and raw extracted text are omitted from the upload response).*
+
+#### List Candidate Documents
+- **Endpoint**: `GET /api/profiles/:id/documents`
+- **Response** (HTTP 200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "documents": [
+      {
+        "_id": "6703f191fa315a6760592b05",
+        "documentType": "resume",
+        "fileName": "my_resume.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": 128450,
+        "extractionStatus": "completed",
+        "uploadedAt": "2026-10-07T11:55:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+#### Get Document Details by ID
+- **Endpoint**: `GET /api/profiles/:id/documents/:documentId`
+- **Response** (HTTP 200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "document": {
+      "_id": "6703f191fa315a6760592b05",
+      "documentType": "resume",
+      "fileName": "my_resume.pdf",
+      "mimeType": "application/pdf",
+      "fileSize": 128450,
+      "extractionStatus": "completed",
+      "extractedText": "Alex Mercer Software Engineer...",
+      "uploadedAt": "2026-10-07T11:55:00.000Z"
+    }
+  }
+}
+```
+
+#### Get Raw Document Text for AI Service (Aman's Module)
+- **Endpoint**: `GET /api/profiles/:id/documents/text`
+- **Response** (HTTP 200 OK):
+```json
+{
+  "success": true,
+  "data": {
+    "resumeText": "Alex Mercer Software Engineer...",
+    "cvText": null
+  }
+}
+```
+
+---
+
+## 🔒 Security & Validation Details
+
+- **File Type**: Strictly limited to `application/pdf` with `.pdf` extension.
+- **File Size**: Maximum 5 MB enforced at the Multer layer.
+- **File Naming**: Collision-resistant cryptographic random server-side filename (`doc-<timestamp>-<randomHex>.pdf`).
+- **Filesystem Privacy**: Server filesystem paths (`storagePath`) are never leaked to API clients.
+- **Git Protection**: `uploads/*` is excluded from git commits via `.gitignore`.

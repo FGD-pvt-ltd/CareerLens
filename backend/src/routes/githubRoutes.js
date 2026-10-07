@@ -1,10 +1,10 @@
 const express = require('express');
 const githubController = require('../controllers/githubController');
-const { validateGithubBody } = require('../middleware/validationMiddleware');
 
-const router = express.Router();
+// mergeParams: true allows accessing :id from parent router (/api/profiles/:id/github)
+const router = express.Router({ mergeParams: true });
 
-// Analyze GitHub user profile and repositories
-router.post('/analyze', validateGithubBody, githubController.analyzeGithub);
+// POST /api/profiles/:id/github - Analyze and ingest candidate GitHub profile
+router.post('/', githubController.analyzeGithubProfile);
 
 module.exports = router;

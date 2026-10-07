@@ -1,18 +1,16 @@
 import { apiRequest } from './api';
 
-export async function fetchGithubProfile(username) {
-  return apiRequest(`/profile/github/${username}`, {
-    method: 'GET',
-  });
-}
-
-export async function verifyGithubRepositories(username) {
-  return apiRequest(`/profile/github/${username}/repos`, {
-    method: 'GET',
+/**
+ * Trigger GitHub profile analysis and repository ingestion for candidate
+ * POST /api/profiles/:id/github
+ */
+export async function analyzeCandidateGithub(profileId, githubUrl) {
+  return apiRequest(`/profiles/${profileId}/github`, {
+    method: 'POST',
+    body: JSON.stringify({ githubUrl }),
   });
 }
 
 export default {
-  fetchGithubProfile,
-  verifyGithubRepositories,
+  analyzeCandidateGithub,
 };

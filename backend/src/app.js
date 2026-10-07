@@ -1,65 +1,57 @@
 const express = require('express');
 const cors = require('cors');
-const env = require('./config/env');
 const errorHandler = require('./middleware/errorHandler');
-const { successResponse, errorResponse } = require('./utils/response');
 
 // Route Modules
 const profileRoutes = require('./routes/profileRoutes');
 const analysisRoutes = require('./routes/analysisRoutes');
-const roadmapRoutes = require('./routes/roadmapRoutes');
-const githubRoutes = require('./routes/githubRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const jobRoleRoutes = require('./routes/jobRoleRoutes');
 
 const app = express();
 
 // CORS Configuration
-const allowedOrigins = [
-  env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:3000',
-];
-
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or Postman)
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow requests with no origin (Postman, curl) or matching frontendUrl / localhost
+      if (!origin || origin === frontendUrl || origin.startsWith('http://localhost:')) {
         return callback(null, true);
       }
-      return callback(null, true); // Dev fallback
+      return callback(null, true);
     },
     credentials: true,
   })
 );
 
-// Standard Body Parsers
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body Parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
-  return successResponse(res, {
-    status: 'ok',
-    service: 'ProfiQ Backend API',
-    version: '1.0.0',
-    environment: env.NODE_ENV,
-    timestamp: new Date().toISOString(),
+  return res.status(200).json({
+    success: true,
+    message: 'ProfiQ backend is running',
   });
 });
 
-// Mount Resource API Routes
+// Route Registration
 app.use('/api/profiles', profileRoutes);
 app.use('/api/analysis', analysisRoutes);
-app.use('/api/roadmap', roadmapRoutes);
-app.use('/api/github', githubRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/roles', jobRoleRoutes);
 
-// Catch-all 404 handler
+// 404 Catch-All
 app.use((req, res) => {
-  return errorResponse(res, `Endpoint not found: ${req.method} ${req.originalUrl}`, 404);
+  return res.status(404).json({
+    success: false,
+    error: `Endpoint not found: ${req.method} ${req.originalUrl}`,
+  });
 });
 
-// Centralized Application Error Handler
+// Centralized Error Handling
 app.use(errorHandler);
 
 module.exports = app;

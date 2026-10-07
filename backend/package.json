@@ -7,14 +7,23 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node -e \"const { connectDB } = require('./src/config/db'); const { seedJobRoles } = require('./src/services/roleService'); connectDB().then(seedJobRoles).then(() => { console.log('Job roles seeded.'); process.exit(0); });\"",
-    "test": "node test-suite.js"
+    "test": "node test-candidate-hub.js && node test-document-pipeline.js && node test-github-pipeline.js && node test-coding-profiles.js && node test-unified-profile.js && node test-ai-integration.js && node test-job-roles.js",
+    "test:hub": "node test-candidate-hub.js",
+    "test:pipeline": "node test-document-pipeline.js",
+    "test:github": "node test-github-pipeline.js",
+    "test:coding": "node test-coding-profiles.js",
+    "test:unified": "node test-unified-profile.js",
+    "test:ai": "node test-ai-integration.js",
+    "test:roles": "node test-job-roles.js",
+    "seed:roles": "node src/scripts/seedRoles.js",
+    "test:e2e": "node test-live-e2e.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "mongoose": "^8.8.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.3",
+    "mongoose": "^8.24.5",
+    "mongodb-memory-server": "^11.3.0",
     "multer": "^2.4.0",
     "pdf-parse": "^2.4.5"
   },
