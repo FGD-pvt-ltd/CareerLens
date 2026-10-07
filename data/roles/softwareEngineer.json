@@ -1,0 +1,14 @@
+{
+  "roleId": "software-engineer",
+  "title": "Software Engineer",
+  "category": "Engineering",
+  "level": "Entry-Level",
+  "coreSkills": [
+    { "name": "Data Structures & Algorithms", "importance": "critical", "weight": 0.25 },
+    { "name": "Node.js", "importance": "critical", "weight": 0.20 },
+    { "name": "REST APIs", "importance": "critical", "weight": 0.15 },
+    { "name": "Git", "importance": "critical", "weight": 0.15 },
+    { "name": "Databases (SQL/NoSQL)", "importance": "recommended", "weight": 0.15 },
+    { "name": "System Design Basics", "importance": "recommended", "weight": 0.10 }
+  ]
+}

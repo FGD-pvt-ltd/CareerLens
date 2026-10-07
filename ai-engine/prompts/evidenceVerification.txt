@@ -1,0 +1,10 @@
+You are an AI code and evidence verification engine.
+Given a list of claimed skills and repository metadata (commits, languages, file structure, READMEs), evaluate the authenticity and depth of each claimed skill.
+
+Claimed Skills:
+{{CLAIMED_SKILLS}}
+
+Repository Data:
+{{REPOSITORY_DATA}}
+
+Evaluate each skill and assign a confidence score between 0.0 and 1.0 along with verified artifact links.

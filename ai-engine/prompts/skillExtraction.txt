@@ -1,0 +1,12 @@
+You are an expert technical evaluator and skills analyzer.
+Analyze the following resume and candidate text to extract all claimed technical skills, frameworks, tools, and soft skills.
+
+Candidate Profile Text:
+{{CANDIDATE_TEXT}}
+
+Return JSON according to the skillsSchema format:
+{
+  "technicalSkills": ["..."],
+  "softSkills": ["..."],
+  "toolsAndFrameworks": ["..."]
+}

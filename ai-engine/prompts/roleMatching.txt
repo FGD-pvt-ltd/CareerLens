@@ -1,0 +1,13 @@
+You are a career readiness assessment engine.
+Compare the verified skills of the candidate against the requirements of the target job role.
+
+Target Job Role:
+{{JOB_ROLE}}
+
+Candidate Verified Skills:
+{{VERIFIED_SKILLS}}
+
+Output:
+1. Overlap percentage
+2. High-priority missing skills
+3. Strengths and competitive advantages

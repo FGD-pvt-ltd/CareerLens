@@ -1,0 +1,16 @@
+{
+  "categories": [
+    {
+      "name": "Communication & Collaboration",
+      "skills": ["Verbal Communication", "Technical Writing", "Active Listening", "Teamwork", "Cross-Functional Collaboration"]
+    },
+    {
+      "name": "Problem Solving & Execution",
+      "skills": ["Critical Thinking", "Analytical Reasoning", "Debugging Mindset", "Adaptability", "Time Management"]
+    },
+    {
+      "name": "Leadership & Ownership",
+      "skills": ["Project Ownership", "Mentorship", "Decision Making", "Accountability"]
+    }
+  ]
+}

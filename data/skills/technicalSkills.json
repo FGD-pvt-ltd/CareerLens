@@ -1,0 +1,28 @@
+{
+  "categories": [
+    {
+      "name": "Programming Languages",
+      "skills": ["JavaScript", "TypeScript", "Python", "Java", "C++", "Go", "Rust"]
+    },
+    {
+      "name": "Frontend Frameworks & Libraries",
+      "skills": ["React", "Vue.js", "Angular", "Next.js", "HTML5", "CSS3", "TailwindCSS"]
+    },
+    {
+      "name": "Backend & APIs",
+      "skills": ["Node.js", "Express", "Django", "FastAPI", "Spring Boot", "GraphQL", "REST APIs"]
+    },
+    {
+      "name": "Databases & Storage",
+      "skills": ["MongoDB", "PostgreSQL", "MySQL", "Redis", "Firebase", "Elasticsearch"]
+    },
+    {
+      "name": "DevOps & Cloud",
+      "skills": ["Docker", "Kubernetes", "AWS", "Google Cloud", "CI/CD", "Git", "GitHub Actions"]
+    },
+    {
+      "name": "Data Science & AI",
+      "skills": ["Pandas", "NumPy", "Scikit-Learn", "TensorFlow", "PyTorch", "LangChain"]
+    }
+  ]
+}

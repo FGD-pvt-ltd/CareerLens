@@ -1,0 +1,13 @@
+{
+  "roleId": "data-analyst",
+  "title": "Data Analyst",
+  "category": "Data & Analytics",
+  "level": "Entry-Level",
+  "coreSkills": [
+    { "name": "SQL", "importance": "critical", "weight": 0.30 },
+    { "name": "Python (Pandas, NumPy)", "importance": "critical", "weight": 0.25 },
+    { "name": "Data Visualization (Tableau/PowerBI)", "importance": "critical", "weight": 0.20 },
+    { "name": "Exploratory Data Analysis", "importance": "recommended", "weight": 0.15 },
+    { "name": "Statistical Analysis", "importance": "recommended", "weight": 0.10 }
+  ]
+}

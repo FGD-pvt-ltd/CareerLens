@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SkillsExtractionSchema",
+  "type": "object",
+  "properties": {
+    "technicalSkills": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "softSkills": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "toolsAndFrameworks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["technicalSkills", "softSkills"]
+}

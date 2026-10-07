@@ -1,0 +1,13 @@
+{
+  "roleId": "uiux-designer",
+  "title": "UI/UX Designer",
+  "category": "Design",
+  "level": "Entry-Level",
+  "coreSkills": [
+    { "name": "Figma / FigJam", "importance": "critical", "weight": 0.30 },
+    { "name": "Wireframing & Prototyping", "importance": "critical", "weight": 0.25 },
+    { "name": "User Research & Usability Testing", "importance": "critical", "weight": 0.20 },
+    { "name": "Design Systems", "importance": "recommended", "weight": 0.15 },
+    { "name": "Information Architecture", "importance": "recommended", "weight": 0.10 }
+  ]
+}

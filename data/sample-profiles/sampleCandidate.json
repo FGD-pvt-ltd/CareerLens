@@ -1,0 +1,23 @@
+{
+  "id": "candidate-001",
+  "name": "Alex Mercer",
+  "email": "alex.mercer@example.edu",
+  "targetRole": "Frontend Developer",
+  "githubUsername": "alexmercer-dev",
+  "portfolioUrl": "https://alexmercer.dev",
+  "claimedSkills": [
+    "JavaScript",
+    "React",
+    "HTML5",
+    "CSS3",
+    "Git",
+    "Node.js"
+  ],
+  "projects": [
+    {
+      "title": "E-Commerce Storefront",
+      "repository": "https://github.com/alexmercer-dev/react-ecommerce",
+      "techStack": ["React", "CSS3", "JavaScript"]
+    }
+  ]
+}

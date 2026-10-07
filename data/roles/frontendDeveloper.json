@@ -1,0 +1,13 @@
+{
+  "roleId": "frontend-developer",
+  "title": "Frontend Developer",
+  "category": "Web Development",
+  "level": "Entry-Level",
+  "coreSkills": [
+    { "name": "JavaScript (ES6+)", "importance": "critical", "weight": 0.25 },
+    { "name": "React", "importance": "critical", "weight": 0.25 },
+    { "name": "HTML5 / CSS3", "importance": "critical", "weight": 0.20 },
+    { "name": "Responsive Design & UI/UX", "importance": "recommended", "weight": 0.15 },
+    { "name": "Git & Version Control", "importance": "recommended", "weight": 0.15 }
+  ]
+}

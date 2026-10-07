@@ -1,0 +1,25 @@
+{
+  "name": "skillproof-monorepo",
+  "version": "1.0.0",
+  "description": "SkillProof — AI-Powered Employability and Career Readiness Analyzer (DataQuest 3.0)",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "start:backend": "npm --prefix backend start",
+    "install:frontend": "npm --prefix frontend install",
+    "install:backend": "npm --prefix backend install",
+    "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "test": "npm --prefix backend test && npm --prefix frontend test"
+  },
+  "keywords": [
+    "skillproof",
+    "career-readiness",
+    "employability-analyzer",
+    "ai",
+    "gemini",
+    "monorepo"
+  ],
+  "author": "SkillProof Team",
+  "license": "MIT"
+}
