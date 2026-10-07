@@ -1,13 +1,34 @@
-require('dotenv').config();
 const app = require('./app');
-const connectDB = require('./config/db');
+const env = require('./config/env');
+const { connectDB } = require('./config/db');
+const { seedJobRoles } = require('./services/roleService');
 
-const PORT = process.env.PORT || 5000;
+async function startServer() {
+  // Connect to Database (graceful with in-memory fallback)
+  await connectDB();
 
-// Graceful database connection attempt
-connectDB();
+  // Seed standard industry role benchmarks
+  await seedJobRoles();
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`ProfiQ Backend Server running on port ${PORT}`);
-});
+  const server = app.listen(env.PORT, () => {
+    console.log(`==============================================`);
+    console.log(` ProfiQ Backend Server running on port ${env.PORT}`);
+    console.log(` Environment: ${env.NODE_ENV}`);
+    console.log(` Health Check: http://localhost:${env.PORT}/api/health`);
+    console.log(`==============================================`);
+  });
+
+  // Graceful shutdown handling
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Shutting down gracefully...');
+    server.close(() => {
+      console.log('Server closed.');
+    });
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+}
+
+startServer();

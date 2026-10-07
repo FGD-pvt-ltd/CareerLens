@@ -7,13 +7,16 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Backend tests placeholder\" && exit 0"
+    "seed": "node -e \"const { connectDB } = require('./src/config/db'); const { seedJobRoles } = require('./src/services/roleService'); connectDB().then(seedJobRoles).then(() => { console.log('Job roles seeded.'); process.exit(0); });\"",
+    "test": "node test-suite.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "mongoose": "^8.8.0"
+    "mongoose": "^8.8.0",
+    "multer": "^2.4.0",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
