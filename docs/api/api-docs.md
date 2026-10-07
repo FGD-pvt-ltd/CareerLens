@@ -1,42 +1,39 @@
-# SkillProof — REST API Documentation
+# ProfiQ — REST API Documentation
 
 Base URL: `http://localhost:5000/api`
 
-## Endpoints
+## Current Endpoints (Foundation)
 
-### 1. Health
-- `GET /health`
-  - Returns backend service health status.
+### 1. Health Check
+- `GET /api/health`
+  - **Description**: Returns backend service health status, version, and timestamp.
+  - **Status Code**: `200 OK`
+  - **Response Sample**:
+    ```json
+    {
+      "status": "ok",
+      "service": "ProfiQ Backend API",
+      "version": "1.0.0",
+      "timestamp": "2026-10-07T08:59:58.715Z"
+    }
+    ```
+
+## Planned Endpoints (Future Modules)
 
 ### 2. Authentication
-- `POST /auth/register`
-  - Request: `{ name, email, password, role }`
-  - Response: `{ success, user, token }`
-- `POST /auth/login`
-  - Request: `{ email, password }`
-  - Response: `{ success, token }`
-- `GET /auth/me`
-  - Headers: `Authorization: Bearer <token>`
-  - Response: Current user object
+- `POST /api/auth/register` — Candidate and admin registration
+- `POST /api/auth/login` — Authentication and token generation
+- `GET /api/auth/me` — Authenticated user verification
 
 ### 3. Profile Management
-- `GET /profile`
-  - Retrieve current user profile and claimed skills.
-- `PUT /profile`
-  - Update user profile details, links, and targets.
-- `POST /profile/upload-resume`
-  - Multipart form upload for candidate resume (PDF/DOCX).
+- `GET /api/profile` — Fetch candidate profile and claimed skills
+- `PUT /api/profile` — Update candidate profile data and target role
+- `POST /api/profile/upload-resume` — Multipart upload for PDF/DOCX resumes
 
-### 4. Analysis & Scoring
-- `POST /analysis/start`
-  - Request: `{ profileId, targetRoleId }`
-  - Response: `{ success, analysisId }`
-- `GET /analysis/:id`
-  - Response: `{ readinessScore, skillScore, evidenceScore, verifiedSkills, missingSkills, roadmap }`
+### 4. Analysis & Readiness Scoring
+- `POST /api/analysis/start` — Initiate AI analysis pipeline for candidate profile
+- `GET /api/analysis/:id` — Fetch full employability report with readiness breakdown
 
 ### 5. Roadmap & Growth
-- `GET /roadmap/:analysisId`
-  - Retrieve personalized milestone roadmap.
-- `PATCH /roadmap/milestone/:milestoneId`
-  - Request: `{ completed: boolean }`
-  - Updates candidate progress on specific roadmap milestone.
+- `GET /api/roadmap/:analysisId` — Retrieve personalized milestone action plan
+- `PATCH /api/roadmap/milestone/:milestoneId` — Mark milestone progress

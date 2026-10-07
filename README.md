@@ -1,214 +1,196 @@
-# SkillProof — AI-Powered Employability & Career Readiness Analyzer
+# ProfiQ
 
-> **DataQuest 3.0 Hackathon Project**  
-> An AI-driven intelligence platform for evaluating candidate skill authenticity, verifying portfolio evidence, detecting industry skill gaps, and generating personalized career roadmaps.
+> **ProfiQ** — An AI-Powered Employability and Career Readiness Analyzer.
 
 ---
 
-## 📌 Project Architecture Overview
+## 🏗️ Current Architecture
 
-SkillProof is structured as a modular monorepo tailored for a **3-member hackathon team** to collaborate concurrently without merge conflicts or overlapping concerns:
+ProfiQ is designed as a modular monorepo tailored for high-speed hackathon execution and structured collaboration across a **3-member team**. 
 
 ```text
-skillproof/
+┌────────────────────────────────────────────────────────┐
+│                   Frontend (React + Vite)              │
+│  - Candidate Portal (Resume Ingestion, Skills, Links)  │
+│  - Institutional / Placement Dashboard                 │
+│  - Readiness Scorecard, Evidence Breakdown, Roadmap    │
+└───────────────────────────┬────────────────────────────┘
+                            │ REST API (JSON)
+                            ▼
+┌────────────────────────────────────────────────────────┐
+│                   Backend (Node.js + Express)          │
+│  - Health Check & Auth / Session Routing               │
+│  - Profile Ingestion & Verification Orchestrator       │
+│  - MongoDB Storage & External API Connectors (GitHub)  │
+└──────────────┬────────────────────────────┬────────────┘
+               │                            │
+               ▼                            ▼
+┌─────────────────────────┐    ┌─────────────────────────┐
+│     Database (MongoDB)  │    │   AI Engine (Gemini)    │
+│  - Users & Profiles     │    │  - Skill Extraction     │
+│  - Job Role Benchmarks  │    │  - Evidence Verification│
+│  - Analysis Reports     │    │  - Role Matching        │
+│  - Growth Roadmaps      │    │  - Scoring Engine       │
+└─────────────────────────┘    └─────────────────────────┘
+```
+
+- **Frontend Client (`frontend/`)**: Modern React 18 SPA powered by Vite for rapid development and high-performance asset bundling.
+- **Backend Service (`backend/`)**: Express REST API coordinating profile ingestion, external validation (e.g., GitHub verification), database persistence, and AI orchestration.
+- **AI Engine (`ai-engine/`)**: Modular architecture targeting Google Gemini models for skill extraction, artifact verification, benchmark comparison, and scoring algorithms.
+- **Data Repository (`data/`)**: Canonical taxonomies of technical/soft skills, job role benchmark matrices, and mock candidate profiles for offline testing.
+- **Documentation (`docs/`)**: Specifications covering architecture, REST endpoints, database schemas, evaluation logic, and demo scripts.
+- **Test Suites (`tests/`)**: Test directories for frontend, backend, and AI engine modules.
+
+---
+
+## 📁 Folder Structure
+
+```text
+profiq/
+├── frontend/                     # React + Vite application
+│   ├── public/                   # Static public assets
+│   ├── src/
+│   │   ├── assets/               # Local bundled assets
+│   │   ├── components/           # Reusable UI component modules
+│   │   ├── pages/                # Application views
+│   │   ├── services/             # API client services (api.js)
+│   │   ├── hooks/                # Custom React hooks
+│   │   ├── context/              # Global state management
+│   │   ├── utils/                # Frontend helper functions
+│   │   ├── App.jsx               # Main React application component
+│   │   ├── main.jsx              # React DOM mounting entrypoint
+│   │   └── index.css             # Design tokens & core styling
+│   ├── index.html                # HTML5 entrypoint
+│   ├── package.json              # Frontend dependencies and scripts
+│   └── vite.config.js            # Vite configuration
 │
-├── frontend/                     # Member 1: React + Vite web client
-│   ├── public/                   # Static public assets (images, icons)
-│   │   ├── images/
-│   │   └── icons/
-│   └── src/
-│       ├── assets/               # Local bundled assets
-│       ├── components/           # Reusable UI component modules
-│       │   ├── Navbar/
-│       │   ├── Dashboard/
-│       │   ├── ResumeUpload/
-│       │   ├── ProfileInput/
-│       │   ├── ScoreCard/
-│       │   ├── SkillAnalysis/
-│       │   ├── EvidenceCard/
-│       │   ├── GapAnalysis/
-│       │   └── Roadmap/
-│       ├── pages/                # High-level route views
-│       │   ├── Landing.jsx
-│       │   ├── Login.jsx
-│       │   ├── ProfileSetup.jsx
-│       │   ├── Analysis.jsx
-│       │   ├── Results.jsx
-│       │   └── PlacementDashboard.jsx
-│       ├── services/             # API client & auth connectors
-│       │   ├── api.js
-│       │   ├── auth.js
-│       │   └── github.js
-│       ├── hooks/                # Custom React hooks
-│       ├── context/              # State management context providers
-│       ├── utils/                # Frontend helpers
-│       ├── App.jsx               # App container & route navigator
-│       └── main.jsx              # React DOM entrypoint
-│
-├── backend/                      # Member 2: Node.js + Express REST API & Database
+├── backend/                      # Node.js + Express REST API
 │   ├── src/
 │   │   ├── controllers/          # Endpoint request handlers
-│   │   │   ├── authController.js
-│   │   │   ├── profileController.js
-│   │   │   ├── analysisController.js
-│   │   │   └── roadmapController.js
 │   │   ├── routes/               # Express REST route definitions
-│   │   │   ├── authRoutes.js
-│   │   │   ├── profileRoutes.js
-│   │   │   ├── analysisRoutes.js
-│   │   │   └── roadmapRoutes.js
 │   │   ├── models/               # MongoDB Mongoose schemas
-│   │   │   ├── User.js
-│   │   │   ├── Profile.js
-│   │   │   ├── Analysis.js
-│   │   │   └── JobRole.js
-│   │   ├── services/             # Core business logic & integrations
-│   │   │   ├── resumeService.js
-│   │   │   ├── githubService.js
-│   │   │   ├── portfolioService.js
-│   │   │   └── analysisService.js
-│   │   ├── middleware/           # Auth and error middleware
-│   │   ├── config/               # Database and server configs
-│   │   ├── utils/                # Server utility functions
-│   │   ├── app.js                # Express app configuration
+│   │   ├── services/             # Business logic & external API connectors
+│   │   ├── middleware/           # Auth and error handling middleware
+│   │   ├── config/               # Database and environment configurations
+│   │   ├── utils/                # Backend utilities and helpers
+│   │   ├── app.js                # Express app setup and middleware pipeline
 │   │   └── server.js             # Server startup entrypoint
-│   └── uploads/                  # Temporary resume file upload storage
+│   ├── uploads/                  # Uploaded resume files (git-ignored)
+│   └── package.json              # Backend dependencies and scripts
 │
-├── ai-engine/                    # Member 3: Gemini AI Agents, Scoring, & Schemas
-│   ├── agents/                   # Autonomous AI prompt executors
-│   │   ├── profileAnalyzer/
-│   │   ├── skillExtractor/
-│   │   ├── evidenceVerifier/
-│   │   ├── roleMatcher/
-│   │   └── roadmapGenerator/
-│   ├── prompts/                  # Versioned LLM prompt templates
-│   │   ├── skillExtraction.txt
-│   │   ├── evidenceVerification.txt
-│   │   ├── roleMatching.txt
-│   │   └── roadmapGeneration.txt
+├── ai-engine/                    # AI agents, prompts, schemas, and scoring
+│   ├── skill-extraction/         # Resume & profile skill extractor module
+│   ├── evidence-verification/    # Code repo & commit artifact verifier
+│   ├── role-matching/            # Benchmark role requirement matcher
+│   ├── roadmap-generation/       # Personalized career roadmap generator
 │   ├── scoring/                  # Deterministic & weighted scoring formulas
-│   │   ├── readinessScore.js
-│   │   ├── skillScore.js
-│   │   └── evidenceScore.js
-│   ├── schemas/                  # JSON Schemas for structured LLM I/O
-│   │   ├── profileSchema.json
-│   │   ├── skillsSchema.json
-│   │   └── analysisSchema.json
+│   ├── prompts/                  # LLM prompt templates
+│   ├── schemas/                  # Structured JSON I/O schemas
 │   └── index.js                  # AI Engine aggregator entrypoint
 │
-├── data/                         # Standardized datasets & role benchmarks
-│   ├── skills/                   # Curated technical & soft skills taxonomy
-│   │   ├── technicalSkills.json
-│   │   └── softSkills.json
-│   ├── roles/                    # Target job role skill matrices
-│   │   ├── softwareEngineer.json
-│   │   ├── dataAnalyst.json
-│   │   ├── frontendDeveloper.json
-│   │   └── uiuxDesigner.json
-│   └── sample-profiles/          # Mock candidate data for testing & demo
+├── data/                         # Role matrices and skill benchmarks
+│   ├── roles/                    # Target role benchmark skill definitions
+│   ├── skills/                   # Technical and soft skills taxonomy
+│   └── sample-profiles/          # Mock candidate profiles for testing
 │
-├── docs/                         # Technical documentation & project artifacts
-│   ├── architecture/             # System diagrams and topology
-│   ├── api/                      # REST API specifications
-│   ├── database/                 # MongoDB collection schema details
-│   ├── scoring/                  # Scoring equations & verification logic
-│   └── demo/                     # Step-by-step hackathon pitch guide
+├── docs/                         # Project specifications & documentation
+│   ├── architecture/             # Architecture overview & diagrams
+│   ├── api/                      # REST API endpoints documentation
+│   ├── database/                 # MongoDB database schemas
+│   ├── scoring/                  # Employability scoring methodology
+│   └── demo/                     # Hackathon presentation and demo script
 │
-├── tests/                        # Modular test suites
-│   ├── frontend/
-│   ├── backend/
-│   └── ai-engine/
+├── tests/                        # Automated test suites
+│   ├── frontend/                 # Frontend component & UI tests
+│   ├── backend/                  # API and database tests
+│   └── ai-engine/                # Prompt & scoring tests
 │
 ├── .env.example                  # Environment configuration template
-├── .gitignore                    # Git ignore rules for node, env, build, uploads
-├── README.md                     # Monorepo documentation
-└── LICENSE                       # MIT License
+├── .gitignore                    # Version control exclusions
+├── LICENSE                       # MIT License
+├── package.json                  # Monorepo root scripts
+└── README.md                     # Project documentation
 ```
 
 ---
 
-## 👥 3-Member Team Division of Responsibilities
-
-| Role | Module Ownership | Core Responsibilities |
-| :--- | :--- | :--- |
-| **Developer 1 (Frontend)** | `frontend/`, `tests/frontend/` | UI/UX design, interactive dashboards, file upload widgets, visual scorecards, gap visualizer, and API consumption. |
-| **Developer 2 (Backend & DB)** | `backend/`, `data/`, `tests/backend/` | REST API routes, controllers, MongoDB schemas, JWT auth, GitHub REST API data fetcher, and file upload handling. |
-| **Developer 3 (AI Engine & Scoring)** | `ai-engine/`, `docs/`, `tests/ai-engine/` | Gemini prompt engineering, evidence verification algorithms, scoring formulas, JSON schema contracts, and roadmap generator. |
-
----
-
-## 🚀 Getting Started
+## ⚙️ Setup Instructions
 
 ### Prerequisites
-- **Node.js**: v18+ (v20+ recommended)
+- **Node.js**: v18+ (Node v20+ recommended)
 - **npm**: v9+
-- **MongoDB**: Local MongoDB instance or MongoDB Atlas URI
-- **Google Gemini API Key**: [Google AI Studio](https://aistudio.google.com/)
+- **MongoDB**: Local MongoDB instance or MongoDB Atlas cluster (optional for initial foundation)
+- **Git**
+
+### Installation
+
+1. Clone the repository and navigate into the project root:
+   ```bash
+   git clone <repository-url> profiq
+   cd profiq
+   ```
+
+2. Copy the environment configuration:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Install all dependencies across both frontend and backend using the root helper:
+   ```bash
+   npm run install:all
+   ```
+   *(Or run `npm install` inside both `frontend/` and `backend/` folders individually.)*
 
 ---
 
-### 1. Environment Setup
+## 🚀 How to Run the Project
 
-Copy `.env.example` to `.env` in the root (or your backend directory) and configure your keys:
-
+### Running Backend Server
 ```bash
-cp .env.example .env
-```
-
-Ensure the following variables are configured:
-```env
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/skillproof
-GEMINI_API_KEY=your_gemini_api_key_here
-GITHUB_TOKEN=your_github_token_here
-CLIENT_URL=http://localhost:5173
-```
-
----
-
-### 2. Independent Execution
-
-Both frontend and backend can be installed and executed independently:
-
-#### Backend Server
-```bash
-cd backend
-npm install
-npm run dev
-```
-Backend runs by default on: `http://localhost:5000`  
-Health check endpoint: `http://localhost:5000/api/health`
-
-#### Frontend Client
-```bash
-cd frontend
-npm install
-npm run dev
-```
-Frontend runs by default on: `http://localhost:5173`
-
----
-
-### 3. Monorepo Root Commands
-
-For convenience, helper scripts are provided in the root `package.json`:
-
-```bash
-# Install dependencies for both frontend and backend
-npm run install:all
-
-# Start backend in development mode
+# From the root directory:
 npm run dev:backend
 
-# Start frontend in development mode
-npm run dev:frontend
+# Or directly from backend/:
+cd backend
+npm run dev
 ```
+- **Port**: `http://localhost:5000`
+- **Health Check Endpoint**: [`http://localhost:5000/api/health`](http://localhost:5000/api/health)
+  - Returns `{ "status": "ok", "service": "ProfiQ Backend API", "version": "1.0.0" }`
+
+### Running Frontend Client
+```bash
+# From the root directory:
+npm run dev:frontend
+
+# Or directly from frontend/:
+cd frontend
+npm run dev
+```
+- **Port**: `http://localhost:5173`
+- The foundation interface confirms live connectivity to the backend health check.
 
 ---
 
-## 🛡️ Security & Secret Management
-- **Never commit `.env` or API credentials** to version control.
-- All temporary uploaded files in `backend/uploads/` are ignored by git (preserving only `.gitkeep`).
-- The Gemini API key and GitHub personal access token must be kept purely in environment variables.
-#   C a r e e r L e n s  
- 
+## 🔐 Environment Variables Required
+
+Configure the following variables in `.env` (refer to `.env.example`):
+
+| Variable | Description | Example / Default |
+| :--- | :--- | :--- |
+| `PORT` | Backend server port | `5000` |
+| `MONGODB_URI` | MongoDB connection URI string | `mongodb://localhost:27017/profiq` |
+| `GEMINI_API_KEY` | Google Gemini API key for AI engine | `your_gemini_api_key_here` |
+| `GITHUB_TOKEN` | GitHub Personal Access Token for repo verification | `your_github_token_here` |
+
+---
+
+## 👥 Team Development Structure
+
+ProfiQ is cleanly divided across **3 team members** to enable simultaneous feature development without merge conflicts:
+
+| Member / Role | Module Ownership | Core Deliverables |
+| :--- | :--- | :--- |
+| **Member 1 (Frontend Lead)** | `frontend/`, `tests/frontend/` | UI/UX implementation, candidate input flows, placement dashboard, responsive scorecards, gap visualizer, and API integration. |
+| **Member 2 (Backend & DB Lead)** | `backend/`, `data/`, `tests/backend/` | Express REST controllers, MongoDB Mongoose schemas, GitHub API evidence collector, file upload service, and auth handling. |
+| **Member 3 (AI Engine & Scoring Lead)** | `ai-engine/`, `docs/`, `tests/ai-engine/` | Gemini prompt engineering, evidence verification heuristics, skill gap scoring algorithms, and personalized roadmap generator. |

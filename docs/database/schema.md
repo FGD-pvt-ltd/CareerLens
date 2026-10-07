@@ -1,6 +1,7 @@
-# SkillProof — Database Schema Design
+# ProfiQ — Database Schema Design
 
-Database: **MongoDB (Mongoose ODM)**
+Database: **MongoDB (Mongoose ODM)**  
+Target Database Name: `profiq`
 
 ## Collections
 

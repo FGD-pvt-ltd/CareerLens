@@ -1,16 +1,14 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/profiq';
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/skillproof';
-    const conn = await mongoose.connect(mongoUri);
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 2000,
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`MongoDB Connection Error: ${error.message}`);
-    // Non-fatal exit during initial dev if DB is not yet running
-    if (process.env.NODE_ENV === 'production') {
-      process.exit(1);
-    }
+    console.warn(`MongoDB Connection Notice: ${error.message} (Server running without active DB connection)`);
   }
 };
 

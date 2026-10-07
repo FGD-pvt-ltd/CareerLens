@@ -1,6 +1,6 @@
-# SkillProof — Architecture Overview
+# ProfiQ — Architecture Overview
 
-SkillProof is an AI-powered employability and career readiness analyzer designed for engineering and technology students, academic placement cells, and recruiters.
+ProfiQ is an AI-powered employability and career readiness analyzer designed for engineering and technology students, academic placement cells, and recruiters.
 
 ## System Architecture
 
@@ -32,9 +32,9 @@ SkillProof is an AI-powered employability and career readiness analyzer designed
 ## Team Responsibilities (3-Member Team)
 
 1. **Member 1 — Frontend Specialist:**
-   - React components (`ScoreCard`, `EvidenceCard`, `GapAnalysis`, `Roadmap`, `ResumeUpload`)
-   - Pages (`Landing`, `ProfileSetup`, `Analysis`, `Results`, `PlacementDashboard`)
-   - State management and API integration.
+   - React components (future: ScoreCard, EvidenceCard, GapAnalysis, Roadmap, ResumeUpload)
+   - Route pages (future: Landing, ProfileSetup, Analysis, Results, PlacementDashboard)
+   - State management, responsive UI, and backend API integration.
 
 2. **Member 2 — Backend & Database Specialist:**
    - Express routing, controllers, and middleware.

@@ -1,38 +1,26 @@
 /**
- * SkillProof AI Engine Entrypoint
- * Exports agents, scoring algorithms, and schemas
+ * ProfiQ AI Engine Entrypoint (Foundation)
+ * 
+ * Modular architecture prepared for:
+ * - Skill Extraction (resume parsing, profile analysis)
+ * - Evidence Verification (code & GitHub artifact verification)
+ * - Role Matching (target job requirements alignment)
+ * - Roadmap Generation (personalized learning & gap resolution)
+ * - Scoring (deterministic readiness, skill, and evidence metrics)
+ * 
+ * Note: AI logic and agent implementations will be introduced in Task 2.
  */
 
-const profileAnalyzer = require('./agents/profileAnalyzer');
-const skillExtractor = require('./agents/skillExtractor');
-const evidenceVerifier = require('./agents/evidenceVerifier');
-const roleMatcher = require('./agents/roleMatcher');
-const roadmapGenerator = require('./agents/roadmapGenerator');
-
-const readinessScore = require('./scoring/readinessScore');
-const skillScore = require('./scoring/skillScore');
-const evidenceScore = require('./scoring/evidenceScore');
-
-const profileSchema = require('./schemas/profileSchema.json');
-const skillsSchema = require('./schemas/skillsSchema.json');
-const analysisSchema = require('./schemas/analysisSchema.json');
+const scoring = require('./scoring/readinessScore');
 
 module.exports = {
-  agents: {
-    profileAnalyzer,
-    skillExtractor,
-    evidenceVerifier,
-    roleMatcher,
-    roadmapGenerator,
-  },
-  scoring: {
-    readinessScore,
-    skillScore,
-    evidenceScore,
-  },
-  schemas: {
-    profileSchema,
-    skillsSchema,
-    analysisSchema,
-  },
+  version: '1.0.0',
+  modules: [
+    'skill-extraction',
+    'evidence-verification',
+    'role-matching',
+    'roadmap-generation',
+    'scoring',
+  ],
+  scoring,
 };

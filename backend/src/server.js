@@ -4,10 +4,10 @@ const connectDB = require('./config/db');
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to Database
+// Graceful database connection attempt
 connectDB();
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`SkillProof Backend Server running on port ${PORT}`);
+  console.log(`ProfiQ Backend Server running on port ${PORT}`);
 });

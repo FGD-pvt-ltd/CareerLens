@@ -1,7 +1,7 @@
 {
-  "name": "skillproof-monorepo",
+  "name": "profiq",
   "version": "1.0.0",
-  "description": "SkillProof — AI-Powered Employability and Career Readiness Analyzer (DataQuest 3.0)",
+  "description": "ProfiQ — AI-Powered Employability and Career Readiness Analyzer",
   "private": true,
   "scripts": {
     "dev:frontend": "npm --prefix frontend run dev",
@@ -13,13 +13,13 @@
     "test": "npm --prefix backend test && npm --prefix frontend test"
   },
   "keywords": [
-    "skillproof",
+    "profiq",
     "career-readiness",
     "employability-analyzer",
     "ai",
     "gemini",
     "monorepo"
   ],
-  "author": "SkillProof Team",
+  "author": "ProfiQ Team",
   "license": "MIT"
 }

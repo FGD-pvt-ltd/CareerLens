@@ -1,9 +1,9 @@
 # Dependencies
 node_modules/
-.pnp
+/.pnp
 .pnp.js
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
 .env.local
 .env.development.local
@@ -11,14 +11,23 @@ node_modules/
 .env.production.local
 *.env
 
-# Production and Build Outputs
+# Uploads & User Generated Files
+uploads/
+**/uploads/*
+!**/uploads/.gitkeep
+
+# Generated Files & Artifacts
+generated/
+*.generated
 dist/
 dist-ssr/
 build/
-*.local
+coverage/
+*.lcov
+.nyc_output
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -26,25 +35,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Uploads and User Generated Content
-backend/uploads/*
-!backend/uploads/.gitkeep
-
-# Testing and Coverage
-coverage/
-*.lcov
-.nyc_output
-
-# Editor and IDE directories
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS Generated Files
+# OS Temporary Files
 .DS_Store
 .DS_Store?
 ._*
@@ -52,3 +43,13 @@ coverage/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Editor Temporary Files & IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tmp
