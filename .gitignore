@@ -16,6 +16,11 @@ uploads/
 **/uploads/*
 !**/uploads/.gitkeep
 
+# Database Storage Files
+data/
+backend/data/
+**/data/db/*
+
 # Generated Files & Artifacts
 generated/
 *.generated

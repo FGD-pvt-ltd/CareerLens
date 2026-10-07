@@ -278,6 +278,7 @@ const CodingProfileSchema = new mongoose.Schema(
         message: 'Invalid URL format for coding profile profileUrl',
       },
     },
+    problemsSolved: { type: Number, default: null },
     stats: {
       type: CodingProfileStatsSchema,
       default: () => ({}),
@@ -590,6 +591,40 @@ const CandidateProfileSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Auto-sync field aliases and nested stats before validation
+CandidateProfileSchema.pre('validate', function (next) {
+  // 1. Sync codingProfiles problemsSolved and stats.problemsSolved
+  if (Array.isArray(this.codingProfiles)) {
+    for (const cp of this.codingProfiles) {
+      if (cp.problemsSolved != null && (!cp.stats || cp.stats.problemsSolved == null)) {
+        if (!cp.stats) cp.stats = {};
+        cp.stats.problemsSolved = cp.problemsSolved;
+      } else if (cp.stats?.problemsSolved != null && cp.problemsSolved == null) {
+        cp.problemsSolved = cp.stats.problemsSolved;
+      }
+    }
+  }
+
+  // 2. Sync college.name and college.collegeName
+  if (this.college) {
+    if (this.college.name && !this.college.collegeName) {
+      this.college.collegeName = this.college.name;
+    } else if (this.college.collegeName && !this.college.name) {
+      this.college.name = this.college.collegeName;
+    }
+  }
+
+  // 3. Sync professionalProfiles url and profileUrl
+  if (Array.isArray(this.professionalProfiles)) {
+    for (const pp of this.professionalProfiles) {
+      if (pp.url && !pp.profileUrl) pp.profileUrl = pp.url;
+      if (pp.profileUrl && !pp.url) pp.url = pp.profileUrl;
+    }
+  }
+
+  next();
+});
 
 // Deterministic Profile Completeness pre-save hook
 CandidateProfileSchema.pre('save', function (next) {

@@ -8,7 +8,7 @@ dotenv.config();
 const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT, 10) || 5000,
-  MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/profiq',
+  MONGODB_URI: process.env.MONGODB_URI || '',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   UPLOAD_DIR: path.resolve(__dirname, '../../uploads'),
   MAX_FILE_SIZE: 5 * 1024 * 1024,
@@ -31,9 +31,9 @@ function validateEnv() {
     errors.push(`Invalid PORT configured: '${process.env.PORT}'. Must be an integer between 1 and 65535.`);
   }
 
-  // 2. Production Database Requirement
-  if (env.NODE_ENV === 'production' && !process.env.MONGODB_URI) {
-    errors.push('MONGODB_URI is required when running in production environment.');
+  // 2. MongoDB Atlas Database Requirement
+  if (!process.env.MONGODB_URI || !process.env.MONGODB_URI.trim()) {
+    errors.push('MONGODB_URI is required in backend/.env to connect to MongoDB Atlas.');
   }
 
   // 3. Frontend URL
@@ -50,12 +50,14 @@ function validateEnv() {
   // Diagnostic summary with secrets safely masked
   const maskedGithub = env.GITHUB_TOKEN ? `configured (length: ${env.GITHUB_TOKEN.length})` : 'not configured (unauthenticated rate limit)';
   const maskedAiService = env.AI_SERVICE_URL ? env.AI_SERVICE_URL : 'not configured';
-  const mongoSource = env.MONGODB_URI.includes('@') ? 'mongodb://[credentials-hidden]@...' : env.MONGODB_URI;
+  const mongoSource = env.MONGODB_URI.startsWith('mongodb+srv://')
+    ? 'mongodb+srv://[credentials-hidden]@...'
+    : (env.MONGODB_URI.includes('@') ? 'mongodb://[credentials-hidden]@...' : env.MONGODB_URI);
 
   console.log('[Config] Environment validation passed:');
   console.log(`  - NODE_ENV: ${env.NODE_ENV}`);
   console.log(`  - PORT: ${env.PORT}`);
-  console.log(`  - MONGODB_URI: ${mongoSource || 'default fallback'}`);
+  console.log(`  - MONGODB_URI: ${mongoSource || 'not configured'}`);
   console.log(`  - FRONTEND_URL: ${env.FRONTEND_URL}`);
   console.log(`  - GITHUB_TOKEN: ${maskedGithub}`);
   console.log(`  - AI_SERVICE_URL: ${maskedAiService}`);

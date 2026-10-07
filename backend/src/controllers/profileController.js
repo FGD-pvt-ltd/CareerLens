@@ -34,7 +34,7 @@ async function createProfile(req, res, next) {
       'basicInfo', 'college', 'education', 'experience', 'skills',
       'projects', 'certifications', 'academicAchievements', 'achievements',
       'codingProfiles', 'professionalProfiles', 'portfolios', 'github',
-      'resume', 'documents', 'targetRole'
+      'resume', 'documents', 'targetRole', 'analysis'
     ];
 
     const cleanPayload = {};

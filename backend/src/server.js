@@ -39,7 +39,8 @@ async function startServer() {
     process.on('SIGINT', shutdown);
     process.on('SIGTERM', shutdown);
   } catch (error) {
-    console.error(`[Server Error] Unable to start server: ${error.message}`);
+    console.error(`[Server Fatal] Startup aborted: ${error.message}`);
+    console.error('[Server Fatal] Express server will NOT start because MongoDB Atlas connection failed.');
     process.exit(1);
   }
 }

@@ -1,13 +1,37 @@
+const dns = require('dns');
 const mongoose = require('mongoose');
 
-let mongoMemoryServer = null;
+/**
+ * Configure DNS fallback if current system resolver defaults to 127.0.0.1
+ * which breaks SRV record queries for mongodb+srv:// on Windows.
+ */
+function configureDnsFallback() {
+  try {
+    const servers = dns.getServers();
+    if (!servers || servers.length === 0 || (servers.length === 1 && servers[0] === '127.0.0.1')) {
+      dns.setServers(['8.8.8.8', '1.1.1.1']);
+    }
+  } catch {
+    // Non-critical DNS configuration fallback
+  }
+}
 
 /**
- * Connect to MongoDB using Mongoose.
- * Attempts primary process.env.MONGODB_URI first.
- * If local/remote MongoDB daemon is not running or unreachable (e.g. port blocked / ECONNREFUSED),
- * automatically spins up an embedded MongoMemoryServer instance so backend and database
- * operations always succeed seamlessly without manual database installation.
+ * Safely mask credentials in a MongoDB URI for logging.
+ */
+function maskMongoUri(uri) {
+  if (!uri || typeof uri !== 'string') return '';
+  return uri.replace(/\/\/[^@]+@/, '//[credentials-hidden]@');
+}
+
+/**
+ * Connect to MongoDB Atlas using Mongoose.
+ * 
+ * STRICT POLICY:
+ * - Uses ONLY the MONGODB_URI configured in backend/.env.
+ * - Does NOT fall back to localhost / 127.0.0.1 under any circumstances.
+ * - If connection fails, logs safe diagnostics and throws an error so
+ *   the application stops cleanly with a non-zero exit code.
  */
 const connectDB = async () => {
   // If already connected, return active connection
@@ -15,61 +39,44 @@ const connectDB = async () => {
     return mongoose.connection;
   }
 
-  const primaryUri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI;
 
-  if (primaryUri) {
-    try {
-      const conn = await mongoose.connect(primaryUri, {
-        serverSelectionTimeoutMS: 2000,
-      });
-      console.log(`[Database] MongoDB Connected successfully to database: ${conn.connection.name} (${primaryUri})`);
-      return conn;
-    } catch (primaryError) {
-      console.warn(`[Database Warning] Primary MongoDB URI (${primaryUri}) not reachable: ${primaryError.message}`);
-      console.log('[Database] Activating resilient embedded MongoDB engine (mongodb-memory-server)...');
-    }
+  if (!uri || !uri.trim()) {
+    const errorMsg = 'MONGODB_URI is not set in backend/.env. Please configure your MongoDB Atlas connection string.';
+    console.error(`[Database Error] ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
+  if (uri.includes('+srv')) {
+    configureDnsFallback();
+  }
+
+  const maskedUri = maskMongoUri(uri);
+  console.log(`[Database] Connecting to MongoDB Atlas: ${maskedUri}`);
+
   try {
-    const { MongoMemoryServer } = require('mongodb-memory-server');
-    if (!mongoMemoryServer) {
-      try {
-        mongoMemoryServer = await MongoMemoryServer.create({
-          instance: {
-            port: 27017,
-            dbName: 'profiq',
-          },
-        });
-      } catch {
-        mongoMemoryServer = await MongoMemoryServer.create({
-          instance: {
-            dbName: 'profiq',
-          },
-        });
-      }
-    }
-    const memoryUri = mongoMemoryServer.getUri();
-    const conn = await mongoose.connect(memoryUri, {
+    const conn = await mongoose.connect(uri, {
       dbName: 'profiq',
+      serverSelectionTimeoutMS: 5000,
     });
-    console.log(`[Database] Resilient Embedded MongoDB connected successfully at ${memoryUri} (db: profiq)`);
+
+    console.log(`[Database] Connected successfully to MongoDB Atlas!`);
+    console.log(`  - Database: ${conn.connection.name}`);
+    console.log(`  - Host: ${conn.connection.host}`);
     return conn;
-  } catch (embeddedError) {
-    console.error(`[Database Error] Failed to initialize embedded MongoDB: ${embeddedError.message}`);
-    throw embeddedError;
+  } catch (error) {
+    console.error(`[Database Error] Failed to connect to MongoDB Atlas (${maskedUri}):`);
+    console.error(`  - Reason: ${error.message}`);
+    throw error;
   }
 };
 
 /**
- * Cleanly disconnect Mongoose and shut down embedded Mongo engine if running
+ * Cleanly disconnect Mongoose
  */
 const disconnectDB = async () => {
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
-  }
-  if (mongoMemoryServer) {
-    await mongoMemoryServer.stop();
-    mongoMemoryServer = null;
   }
 };
 
