@@ -176,6 +176,7 @@ async function getCandidateDocuments(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Candidate documents retrieved successfully',
       data: {
         documents,
       },
@@ -232,6 +233,7 @@ async function getCandidateDocumentById(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Candidate document retrieved successfully',
       data: {
         document: {
           _id: doc._id,
@@ -269,6 +271,7 @@ async function getCandidateDocumentTextEndpoint(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Candidate document text retrieved successfully',
       data: texts,
     });
   } catch (error) {

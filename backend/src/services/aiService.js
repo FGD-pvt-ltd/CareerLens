@@ -14,7 +14,8 @@ const { validateAndNormalizeAiResponse } = require('../utils/aiResponseNormalize
  * GET ${AI_SERVICE_URL}/health
  */
 async function checkAiHealth() {
-  const healthUrl = `${env.AI_SERVICE_URL.replace(/\/+$/, '')}/health`;
+  const serviceUrl = process.env.AI_SERVICE_URL || env.AI_SERVICE_URL || 'http://localhost:8000';
+  const healthUrl = `${serviceUrl.replace(/\/+$/, '')}/health`;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -92,7 +93,8 @@ async function analyzeCandidateProfile(aiPayload) {
     );
   }
 
-  const endpointUrl = `${env.AI_SERVICE_URL.replace(/\/+$/, '')}/api/analyze`;
+  const serviceUrl = process.env.AI_SERVICE_URL || env.AI_SERVICE_URL || 'http://localhost:8000';
+  const endpointUrl = `${serviceUrl.replace(/\/+$/, '')}/api/analyze`;
   const timeoutMs = env.AI_SERVICE_TIMEOUT_MS || 15000;
 
   console.log(`[AI Service] AI request started for candidateId=${candidateId}, targetRole="${targetRoleName}"`);
@@ -147,7 +149,227 @@ async function analyzeCandidateProfile(aiPayload) {
   }
 }
 
+/**
+ * Clean function that prepares the AI payload conforming strictly to the AI service contract:
+ * {
+ *   candidateId: "...",
+ *   targetRole: { roleId: "...", roleName: "..." },
+ *   profile: {
+ *     basicInfo: {},
+ *     college: {},
+ *     education: [],
+ *     experience: [],
+ *     skills: [],
+ *     projects: [],
+ *     certifications: [],
+ *     academicAchievements: [],
+ *     achievements: [],
+ *     resume: {},
+ *     github: {},
+ *     codingProfiles: [],
+ *     professionalProfiles: [],
+ *     portfolios: []
+ *   }
+ * }
+ * 
+ * Strict boundary:
+ * - NO MongoDB credentials
+ * - NO GitHub tokens
+ * - NO Gemini / OpenAI keys
+ * - NO filesystem storage paths
+ * - NO internal MongoDB fields (__v, _id on subdocuments)
+ */
+function prepareAiPayload(candidateId, targetRole, unifiedCandidate) {
+  if (!candidateId) {
+    throw new Error('candidateId is required to prepare AI payload');
+  }
+
+  const roleObj = {
+    roleId: targetRole?.roleId ? String(targetRole.roleId) : '',
+    roleName: targetRole?.roleName ? String(targetRole.roleName) : '',
+  };
+
+  const cand = (unifiedCandidate && unifiedCandidate.candidate) ? unifiedCandidate.candidate : (unifiedCandidate || {});
+
+  const cleanProfile = {
+    basicInfo: {
+      name: cand.basicInfo?.name || '',
+      email: cand.basicInfo?.email || '',
+      phone: cand.basicInfo?.phone || null,
+      location: cand.basicInfo?.location || null,
+      headline: cand.basicInfo?.headline || null,
+      profilePhotoUrl: cand.basicInfo?.profilePhotoUrl || null,
+    },
+    college: {
+      collegeName: cand.college?.collegeName || null,
+      university: cand.college?.university || null,
+      degree: cand.college?.degree || null,
+      branch: cand.college?.branch || null,
+      specialization: cand.college?.specialization || null,
+      yearOfStudy: cand.college?.yearOfStudy || null,
+      graduationYear: cand.college?.graduationYear ?? null,
+      cgpa: cand.college?.cgpa ?? null,
+      percentage: cand.college?.percentage ?? null,
+      relevantCoursework: Array.isArray(cand.college?.relevantCoursework) ? cand.college.relevantCoursework : [],
+      academicAchievements: Array.isArray(cand.college?.academicAchievements) ? cand.college.academicAchievements : [],
+    },
+    education: (Array.isArray(cand.education) ? cand.education : []).map((e) => ({
+      level: e.level || null,
+      institution: e.institution || null,
+      degree: e.degree || null,
+      field: e.field || null,
+      startYear: e.startYear ?? null,
+      endYear: e.endYear ?? null,
+      cgpa: e.cgpa ?? null,
+      percentage: e.percentage ?? null,
+    })),
+    experience: (Array.isArray(cand.experience) ? cand.experience : []).map((exp) => ({
+      organization: exp.organization || '',
+      role: exp.role || '',
+      employmentType: exp.employmentType || null,
+      location: exp.location || null,
+      startDate: exp.startDate || null,
+      endDate: exp.endDate || null,
+      isCurrent: Boolean(exp.isCurrent),
+      description: exp.description || '',
+      technologies: Array.isArray(exp.technologies) ? exp.technologies : [],
+      achievements: Array.isArray(exp.achievements) ? exp.achievements : [],
+      source: exp.source || 'user_input',
+    })),
+    skills: (Array.isArray(cand.skills) ? cand.skills : []).map((s) => ({
+      name: typeof s === 'string' ? s : (s.name || ''),
+      category: s.category || null,
+      source: s.source || 'user_input',
+    })),
+    projects: (Array.isArray(cand.projects) ? cand.projects : []).map((p) => ({
+      name: p.name || '',
+      description: p.description || '',
+      technologies: Array.isArray(p.technologies) ? p.technologies : [],
+      category: p.category || null,
+      role: p.role || null,
+      startDate: p.startDate || null,
+      endDate: p.endDate || null,
+      githubUrl: p.githubUrl || null,
+      liveUrl: p.liveUrl || null,
+      demoUrl: p.demoUrl || null,
+      teamSize: p.teamSize ?? 1,
+      source: p.source || 'user_input',
+    })),
+    certifications: (Array.isArray(cand.certifications) ? cand.certifications : []).map((c) => ({
+      name: c.name || '',
+      issuingOrganization: c.issuingOrganization || c.issuer || null,
+      issueDate: c.issueDate || null,
+      expiryDate: c.expiryDate || null,
+      credentialId: c.credentialId || null,
+      credentialUrl: c.credentialUrl || null,
+      source: c.source || 'user_input',
+    })),
+    academicAchievements: (Array.isArray(cand.academicAchievements) ? cand.academicAchievements : []).map((a) => ({
+      title: a.title || '',
+      description: a.description || '',
+      date: a.date || null,
+      organization: a.organization || null,
+      credentialUrl: a.credentialUrl || null,
+      source: a.source || 'user_input',
+    })),
+    achievements: (Array.isArray(cand.achievements) ? cand.achievements : []).map((a) => ({
+      title: a.title || '',
+      description: a.description || '',
+      category: a.category || 'other',
+      date: a.date || null,
+      organization: a.organization || null,
+      source: a.source || 'user_input',
+    })),
+    resume: {
+      hasResume: Boolean(cand.resume?.hasResume),
+      hasCv: Boolean(cand.resume?.hasCv),
+      resumeText: cand.resume?.resumeText || '',
+      cvText: cand.resume?.cvText || '',
+      uploadedAt: cand.resume?.uploadedAt || null,
+    },
+    github: {
+      username: cand.github?.username || null,
+      profileUrl: cand.github?.profileUrl || null,
+      name: cand.github?.name || null,
+      bio: cand.github?.bio || null,
+      avatarUrl: cand.github?.avatarUrl || null,
+      company: cand.github?.company || null,
+      location: cand.github?.location || null,
+      publicRepositoryCount: cand.github?.publicRepositoryCount || 0,
+      followers: cand.github?.followers || 0,
+      following: cand.github?.following || 0,
+      repositories: (cand.github?.repositories || []).map((r) => ({
+        name: r.name,
+        fullName: r.fullName,
+        description: r.description,
+        url: r.url,
+        homepage: r.homepage,
+        primaryLanguage: r.primaryLanguage,
+        languages: r.languages || [],
+        topics: r.topics || [],
+        stars: r.stars || 0,
+        forks: r.forks || 0,
+        updatedAt: r.updatedAt,
+        archived: r.archived,
+        fork: r.fork,
+        readme: r.readme || '',
+      })),
+      languageSummary: cand.github?.languageSummary || {},
+      activity: cand.github?.activity || {},
+      analyzedAt: cand.github?.analyzedAt || null,
+    },
+    codingProfiles: (Array.isArray(cand.codingProfiles) ? cand.codingProfiles : []).map((cp) => ({
+      platform: cp.platform,
+      username: cp.username,
+      profileUrl: cp.profileUrl,
+      stats: {
+        problemsSolved: cp.stats?.problemsSolved ?? null,
+        rating: cp.stats?.rating ?? null,
+        rank: cp.stats?.rank ?? null,
+        contestsParticipated: cp.stats?.contestsParticipated ?? null,
+      },
+      problemBreakdown: {
+        easy: cp.problemBreakdown?.easy ?? null,
+        medium: cp.problemBreakdown?.medium ?? null,
+        hard: cp.problemBreakdown?.hard ?? null,
+      },
+      languages: cp.languages || [],
+      activity: {
+        lastActiveDate: cp.activity?.lastActiveDate || null,
+      },
+      dataSource: cp.dataSource,
+      fetchStatus: cp.fetchStatus,
+      fetchedAt: cp.fetchedAt,
+    })),
+    professionalProfiles: (Array.isArray(cand.professionalProfiles) ? cand.professionalProfiles : []).map((pp) => ({
+      platform: pp.platform,
+      profileUrl: pp.profileUrl || null,
+      username: pp.username || null,
+      displayName: pp.displayName || null,
+      fetchStatus: pp.fetchStatus || 'user_provided',
+      dataSource: pp.dataSource || 'user_provided',
+    })),
+    portfolios: (Array.isArray(cand.portfolios) ? cand.portfolios : []).map((pf) => ({
+      platform: pf.platform || 'Other',
+      url: pf.url,
+      title: pf.title || null,
+      description: pf.description || null,
+      type: pf.type || null,
+      fetchStatus: pf.fetchStatus || 'user_provided',
+      dataSource: pf.dataSource || 'user_provided',
+    })),
+  };
+
+  return {
+    candidateId: String(candidateId),
+    targetRole: roleObj,
+    profile: cleanProfile,
+  };
+}
+
 module.exports = {
   checkAiHealth,
   analyzeCandidateProfile,
+  prepareAiPayload,
 };
+

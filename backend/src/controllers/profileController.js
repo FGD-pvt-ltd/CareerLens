@@ -2,6 +2,7 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const profileService = require('../services/profileService');
 const profileAggregationService = require('../services/profileAggregationService');
+const roleService = require('../services/roleService');
 
 // Helper to validate MongoDB ObjectId
 function isValidObjectId(id) {
@@ -28,7 +29,38 @@ async function createProfile(req, res, next) {
       });
     }
 
-    const savedProfile = await profileService.createProfile(req.body);
+    // Whitelist allowed top-level fields to prevent arbitrary property injection
+    const allowedFields = [
+      'basicInfo', 'college', 'education', 'experience', 'skills',
+      'projects', 'certifications', 'academicAchievements', 'achievements',
+      'codingProfiles', 'professionalProfiles', 'portfolios', 'github',
+      'resume', 'documents', 'targetRole'
+    ];
+
+    const cleanPayload = {};
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        cleanPayload[field] = req.body[field];
+      }
+    }
+
+    // Validate target role if provided
+    if (cleanPayload.targetRole) {
+      const roleMatch = await roleService.validateTargetRole(cleanPayload.targetRole);
+      if (!roleMatch) {
+        return res.status(404).json({
+          success: false,
+          error: 'Target role not found',
+        });
+      }
+      cleanPayload.targetRole = {
+        roleId: roleMatch.roleId,
+        roleName: cleanPayload.targetRole.roleName || roleMatch.roleName,
+        slug: roleMatch.slug,
+      };
+    }
+
+    const savedProfile = await profileService.createProfile(cleanPayload);
 
     return res.status(201).json({
       success: true,
@@ -38,6 +70,13 @@ async function createProfile(req, res, next) {
       },
     });
   } catch (error) {
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors || {})[0]?.message || error.message;
+      return res.status(400).json({
+        success: false,
+        error: firstError,
+      });
+    }
     next(error);
   }
 }
@@ -68,6 +107,7 @@ async function getProfileById(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Candidate profile retrieved successfully',
       data: {
         profile,
       },
@@ -76,6 +116,43 @@ async function getProfileById(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * Delete candidate profile by MongoDB ObjectId
+ * DELETE /api/profiles/:id
+ */
+async function deleteProfile(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid profile ID',
+      });
+    }
+
+    const deleted = await profileService.deleteProfile(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        error: 'Candidate profile not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Candidate profile deleted successfully',
+      data: {
+        profileId: id,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 
 /**
  * Retrieve unified candidate profile
@@ -654,6 +731,7 @@ async function analyzeCandidateProfile(req, res, next) {
 module.exports = {
   createProfile,
   getProfileById,
+  deleteProfile,
   getUnifiedProfile,
   updateProfile,
   addProject,

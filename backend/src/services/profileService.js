@@ -1,4 +1,5 @@
 const CandidateProfile = require('../models/CandidateProfile');
+const Analysis = require('../models/Analysis');
 const { evaluateProfile } = require('./analysisService');
 
 /**
@@ -21,6 +22,18 @@ async function getProfileById(id) {
 }
 
 /**
+ * Delete candidate profile by MongoDB ObjectId and cascade cleanup
+ */
+async function deleteProfile(id) {
+  const profile = await CandidateProfile.findByIdAndDelete(id);
+  if (profile) {
+    // Clean up associated analyses
+    await Analysis.deleteMany({ candidateId: id });
+  }
+  return profile;
+}
+
+/**
  * Re-evaluate candidate profile based on updated inputs/documents and persist in MongoDB
  */
 async function analyzeProfile(id) {
@@ -36,5 +49,7 @@ async function analyzeProfile(id) {
 module.exports = {
   createProfile,
   getProfileById,
+  deleteProfile,
   analyzeProfile,
 };
+

@@ -12,14 +12,20 @@ const app = express();
 
 // CORS Configuration
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (Postman, curl) or matching frontendUrl / localhost
-      if (!origin || origin === frontendUrl || origin.startsWith('http://localhost:')) {
+      // Allow requests with no origin (Postman, curl)
+      if (!origin) return callback(null, true);
+      if (origin === frontendUrl || (!isProduction && origin.startsWith('http://localhost:'))) {
         return callback(null, true);
       }
-      return callback(null, true);
+      if (!isProduction) {
+        return callback(null, true);
+      }
+      return callback(new Error('Origin blocked by CORS policy'));
     },
     credentials: true,
   })
@@ -34,6 +40,12 @@ app.get('/api/health', (req, res) => {
   return res.status(200).json({
     success: true,
     message: 'ProfiQ backend is running',
+    data: {
+      status: 'healthy',
+      service: 'profiq-backend',
+      uptime: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    },
   });
 });
 

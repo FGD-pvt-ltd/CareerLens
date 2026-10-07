@@ -168,11 +168,8 @@ async function startAnalysis(req, res, next) {
     console.log(`[Analysis Controller] Analysis record created with ID=${analysis._id}, status="processing"`);
 
     // 7. Prepare clean AI payload conforming strictly to contract
-    const aiPayload = {
-      candidateId: rawCandidateId.toString(),
-      targetRole: targetRoleObj,
-      profile: unified.aiHandoff.profile,
-    };
+    const aiPayload = aiService.prepareAiPayload(rawCandidateId, targetRoleObj, unified);
+
 
     // If caller requests synchronous execution (e.g., test suites or explicit sync query)
     const isSync = req.query.sync === 'true' || req.body?.sync === true;
@@ -233,6 +230,7 @@ async function getAnalysisById(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Analysis record retrieved successfully',
       data: {
         analysis,
       },
@@ -253,11 +251,13 @@ async function getAiHealth(req, res, next) {
     if (healthResult.available) {
       return res.status(200).json({
         success: true,
+        message: 'AI service is available and healthy',
         data: {
           aiService: 'available',
         },
       });
     }
+
 
     return res.status(503).json({
       success: false,

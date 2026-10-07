@@ -598,7 +598,11 @@ CandidateProfileSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance
+CandidateProfileSchema.index({ 'basicInfo.email': 1 }, { sparse: true });
+
 // Let Mongoose manage collection: 'CandidateProfile' -> 'candidateprofiles'
 const CandidateProfile = mongoose.model('CandidateProfile', CandidateProfileSchema);
+
 
 module.exports = CandidateProfile;

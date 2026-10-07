@@ -51,6 +51,7 @@ async function getAllRoles(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Job roles retrieved successfully',
       data: {
         roles: formatted,
         total: formatted.length,
@@ -87,6 +88,7 @@ async function getRoleById(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Job role retrieved successfully',
       data: {
         role: formatRole(role),
       },
@@ -122,6 +124,7 @@ async function getRoleBySlug(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Job role retrieved successfully',
       data: {
         role: formatRole(role),
       },

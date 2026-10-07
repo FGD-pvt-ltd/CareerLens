@@ -80,6 +80,24 @@ export async function getCandidateProfile(profileId) {
 }
 
 /**
+ * Delete a candidate profile by MongoDB ObjectId
+ * DELETE /api/profiles/:id
+ */
+export async function deleteCandidateProfile(profileId) {
+  const res = await fetch(`${API_BASE_URL}/profiles/${profileId}`, {
+    method: 'DELETE',
+  });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.error || `Failed to delete profile (${res.status})`);
+  }
+
+  return data;
+}
+
+
+/**
  * Retrieve candidate's uploaded document metadata
  * GET /api/profiles/:id/documents
  */
@@ -511,7 +529,9 @@ export default {
   createCandidateProfile,
   uploadCandidateDocument,
   getCandidateProfile,
+  deleteCandidateProfile,
   getCandidateDocuments,
+
   getCandidateDocumentText,
   analyzeCandidateProfile,
   analyzeCandidateGithub,

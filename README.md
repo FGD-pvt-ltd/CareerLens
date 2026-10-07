@@ -176,21 +176,48 @@ npm run dev
 
 Configure the following variables in `.env` (refer to `.env.example`):
 
-| Variable | Description | Example / Default |
-| :--- | :--- | :--- |
-| `PORT` | Backend server port | `5000` |
-| `MONGODB_URI` | MongoDB connection URI string | `mongodb://localhost:27017/profiq` |
-| `GEMINI_API_KEY` | Google Gemini API key for AI engine | `your_gemini_api_key_here` |
-| `GITHUB_TOKEN` | GitHub Personal Access Token for repo verification | `your_github_token_here` |
+| Variable | Description | Example / Default | Required / Optional |
+| :--- | :--- | :--- | :--- |
+| `PORT` | Backend server port | `5000` | Required |
+| `MONGODB_URI` | MongoDB connection URI string | `mongodb://localhost:27017/profiq` | Required in prod (auto-fallback in dev) |
+| `FRONTEND_URL` | Allowed origin for CORS policy | `http://localhost:5173` | Required |
+| `GITHUB_TOKEN` | GitHub Personal Access Token for telemetry | `ghp_...` | Optional (prevents API rate limits) |
+| `GEMINI_API_KEY` | Google Gemini API key for AI engine | `AIza...` | Optional |
+| `AI_SERVICE_URL` | Upstream Python/FastAPI AI engine URL | `http://localhost:8000` | Optional |
+| `AI_SERVICE_TIMEOUT_MS` | AI service HTTP request timeout (ms) | `15000` | Optional (default: 15000) |
+| `MOCK_AI_SERVICE` | Enable mock AI responses for isolated dev | `false` | Optional |
+
+---
+
+## 🧪 Testing Commands
+
+```bash
+# Run all backend automated tests:
+cd backend
+npm test
+
+# Run full realistic pipeline end-to-end verification:
+npm run test:pipeline-e2e
+
+# Run live HTTP end-to-end tests:
+npm run test:e2e
+```
+
+---
+
+## 📖 API Documentation Reference
+
+For the complete specification of all backend endpoints, schemas, request/response models, and status codes:
+👉 [ProfiQ REST API Inventory](docs/api/api-inventory.md)
 
 ---
 
 ## 👥 Team Development Structure
 
-ProfiQ is cleanly divided across **3 team members** to enable simultaneous feature development without merge conflicts:
+ProfiQ is cleanly divided across **3 team members** with clear boundaries:
 
 | Member / Role | Module Ownership | Core Deliverables |
 | :--- | :--- | :--- |
-| **Member 1 (Frontend Lead)** | `frontend/`, `tests/frontend/` | UI/UX implementation, candidate input flows, placement dashboard, responsive scorecards, gap visualizer, and API integration. |
-| **Member 2 (Backend & DB Lead)** | `backend/`, `data/`, `tests/backend/` | Express REST controllers, MongoDB Mongoose schemas, GitHub API evidence collector, file upload service, and auth handling. |
-| **Member 3 (AI Engine & Scoring Lead)** | `ai-engine/`, `docs/`, `tests/ai-engine/` | Gemini prompt engineering, evidence verification heuristics, skill gap scoring algorithms, and personalized roadmap generator. |
+| **Sahaj (Frontend Lead)** | `frontend/`, `tests/frontend/` | UI/UX implementation, candidate input flows, placement dashboard, responsive scorecards, gap visualizer, and React state management. |
+| **Asati (Backend & Data Lead)** | `backend/`, `data/`, `tests/backend/` | Express REST APIs, MongoDB Mongoose schemas, Resume extraction, GitHub & coding platform collectors, unified profile normalization, Node ↔ FastAPI integration. |
+| **Aman (AI/ML Lead)** | `ai-engine/`, `docs/`, `tests/ai-engine/` | Python/FastAPI service, prompt engineering, evidence verification heuristics, skill gap scoring algorithms, readiness metrics, and career roadmap generation. |

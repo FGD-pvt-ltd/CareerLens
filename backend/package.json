@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "node test-candidate-hub.js && node test-document-pipeline.js && node test-github-pipeline.js && node test-coding-profiles.js && node test-unified-profile.js && node test-ai-integration.js && node test-job-roles.js",
+    "test": "node test-candidate-hub.js && node test-document-pipeline.js && node test-github-pipeline.js && node test-coding-profiles.js && node test-unified-profile.js && node test-ai-integration.js && node test-job-roles.js && node test-end-to-end-pipeline.js",
     "test:hub": "node test-candidate-hub.js",
     "test:pipeline": "node test-document-pipeline.js",
     "test:github": "node test-github-pipeline.js",
@@ -15,8 +15,10 @@
     "test:unified": "node test-unified-profile.js",
     "test:ai": "node test-ai-integration.js",
     "test:roles": "node test-job-roles.js",
-    "seed:roles": "node src/scripts/seedRoles.js",
-    "test:e2e": "node test-live-e2e.js"
+    "test:e2e": "node test-live-e2e.js",
+    "test:pipeline-e2e": "node test-end-to-end-pipeline.js",
+    "seed:roles": "node src/scripts/seedRoles.js"
+
   },
   "dependencies": {
     "cors": "^2.8.6",

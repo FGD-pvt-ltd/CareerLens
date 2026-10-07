@@ -109,10 +109,12 @@ async function getCodingProfiles(req, res, next) {
 
     return res.status(200).json({
       success: true,
+      message: 'Coding profiles retrieved successfully',
       data: {
         codingProfiles: candidate.codingProfiles || [],
       },
     });
+
   } catch (error) {
     next(error);
   }

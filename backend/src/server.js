@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config();
 
+const { validateEnv } = require('./config/env');
 const app = require('./app');
 const { connectDB, disconnectDB } = require('./config/db');
 const { seedJobRoles } = require('./services/roleService');
@@ -13,7 +14,10 @@ const PORT = parseInt(process.env.PORT, 10) || 5000;
 
 async function startServer() {
   try {
-    // 2. Connect to MongoDB (with automatic fallback to embedded engine if daemon unavailable)
+    // 2. Validate configuration variables
+    validateEnv();
+
+    // 3. Connect to MongoDB (with automatic fallback to embedded engine if daemon unavailable)
     await connectDB();
     await seedJobRoles();
 

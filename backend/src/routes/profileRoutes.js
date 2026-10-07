@@ -52,7 +52,11 @@ router.post('/', profileController.createProfile);
 // GET /api/profiles/:id - Retrieve Candidate Profile by ID
 router.get('/:id', profileController.getProfileById);
 
+// DELETE /api/profiles/:id - Delete Candidate Profile by ID
+router.delete('/:id', profileController.deleteProfile);
+
 // POST /api/profiles/:id/analyze - Evaluate Candidate Profile
 router.post('/:id/analyze', profileController.analyzeCandidateProfile);
 
 module.exports = router;
+
