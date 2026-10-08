@@ -131,7 +131,7 @@ export default function DeskSceneIllustration({ activeTab = 'dossier', onInspect
           <text 
             x="603" 
             y="49" 
-            fontFamily="'JetBrains Mono', monospace" 
+            fontFamily="'Plus Jakarta Sans', sans-serif" 
             fontSize="9" 
             fontWeight="700" 
             fill="#18251B" 
@@ -144,7 +144,7 @@ export default function DeskSceneIllustration({ activeTab = 'dossier', onInspect
           <text 
             x="305" 
             y="50" 
-            fontFamily="'JetBrains Mono', monospace" 
+            fontFamily="'Plus Jakarta Sans', sans-serif" 
             fontSize="13" 
             fontWeight="700" 
             fill="#18251B"
@@ -154,34 +154,34 @@ export default function DeskSceneIllustration({ activeTab = 'dossier', onInspect
           <line x1="305" y1="64" x2="655" y2="64" stroke="#E5E1D5" strokeWidth="1.5" />
 
           {/* Row 1: Target Role */}
-          <text x="305" y="90" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#576356">
+          <text x="305" y="90" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#576356">
             {current.row1Label}
           </text>
-          <text x="425" y="90" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#18251B">
+          <text x="425" y="90" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#18251B">
             {current.row1Val}
           </text>
 
           {/* Row 2: Stack */}
-          <text x="305" y="118" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#576356">
+          <text x="305" y="118" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#576356">
             {current.row2Label}
           </text>
-          <text x="425" y="118" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#18251B">
+          <text x="425" y="118" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#18251B">
             {current.row2Val}
           </text>
 
           {/* Row 3: Evidence */}
-          <text x="305" y="146" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#576356">
+          <text x="305" y="146" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#576356">
             {current.row3Label}
           </text>
-          <text x="425" y="146" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#18251B">
+          <text x="425" y="146" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#18251B">
             {current.row3Val}
           </text>
 
           {/* Row 4: Readiness */}
-          <text x="305" y="174" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="600" fill="#576356">
+          <text x="305" y="174" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="600" fill="#576356">
             {current.row4Label}
           </text>
-          <text x="425" y="174" fontFamily="'JetBrains Mono', monospace" fontSize="10.5" fontWeight="700" fill="#203822">
+          <text x="425" y="174" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10.5" fontWeight="700" fill="#203822">
             {current.row4Val}
           </text>
 
@@ -189,12 +189,12 @@ export default function DeskSceneIllustration({ activeTab = 'dossier', onInspect
           <line x1="305" y1="190" x2="655" y2="190" stroke="#E5E1D5" strokeWidth="1.5" />
 
           {/* Row 5: Action note */}
-          <text x="305" y="210" fontFamily="'JetBrains Mono', monospace" fontSize="10" fill="#C96547" fontWeight="600">
+          <text x="305" y="210" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="10" fill="#C96547" fontWeight="600">
             {current.action}
           </text>
           
           {/* Subtle click prompt */}
-          <text x="305" y="226" fontFamily="'JetBrains Mono', monospace" fontSize="9" fill="#838F82">
+          <text x="305" y="226" fontFamily="'Plus Jakarta Sans', sans-serif" fontSize="9" fill="#838F82">
             Click card to open full analysis →
           </text>
         </g>

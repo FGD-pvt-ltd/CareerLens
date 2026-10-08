@@ -9,25 +9,25 @@ import { Sparkles, FileSearch, GitPullRequest, Milestone, ArrowRight } from 'luc
 export default function EditorialFeatureTrio({ onOpenModal }) {
   const features = [
     {
-      badge: 'STEP 01 // RESUME CHECK',
-      title: 'Turn Resume Bullets Into Real Proof',
-      description: 'We match every skill you claim—like React, TypeScript, or APIs—against your actual project repositories and code.',
+      badge: '01 · EVIDENCE MATCHING',
+      title: 'Turn Resume Claims Into Real Proof',
+      description: 'Match claimed technologies against actual repository commits, code architecture, and package manifests.',
       metric: '18 Skills Checked',
       metricLabel: 'In under 30 seconds'
     },
     {
-      badge: 'STEP 02 // REAL WORK',
-      title: 'Show What You Actually Built',
-      description: 'No awkward whiteboard trivia or artificial brainteasers. Your real commits, app architecture, and code quality speak for themselves.',
+      badge: '02 · PROVEN BUILDS',
+      title: 'Showcase Verifiable Output',
+      description: 'Replace keyword stuffing with genuine commits and engineering consistency that speak for themselves.',
       metric: '100% Real Work',
-      metricLabel: 'No resume guesswork'
+      metricLabel: 'Zero resume guesswork'
     },
     {
-      badge: 'STEP 03 // ACTION PLAN',
-      title: 'A Clear Plan to Level Up',
-      description: 'Know exactly what 2 or 3 missing skills stand between you and your dream role—with a step-by-step weekly project guide.',
-      metric: '+11 Score Boost',
-      metricLabel: 'Projected in 3 weeks'
+      badge: '03 · MILESTONE ROADMAP',
+      title: 'A Structured Plan to Level Up',
+      description: 'Pinpoint exact missing dependencies and follow a prescriptive 4-week project sprint to close key gaps.',
+      metric: '+12 Score Boost',
+      metricLabel: 'Projected in 4 weeks'
     }
   ];
 
@@ -69,7 +69,7 @@ export default function EditorialFeatureTrio({ onOpenModal }) {
                 <div className="mono-token" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                   {item.metric}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                   {item.metricLabel}
                 </div>
               </div>

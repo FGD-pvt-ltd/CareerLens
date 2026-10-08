@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProfiQ — Hackathon Presentation (DataQuest 3.0)</title>
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #FAF9F5;
+      --card-bg: #FFFFFF;
+      --card-border: #E2E8F0;
+      --card-border-hover: #CBD5E1;
+      --text-main: #111827;
+      --text-muted: #4B5563;
+      --text-light: #6B7280;
+      --blue-primary: #2563EB;
+      --blue-tint: #EFF6FF;
+      --rose-accent: #E11D48;
+      --rose-tint: #FFF1F2;
+      --amber-accent: #D97706;
+      --amber-tint: #FEF3C7;
+      --emerald-accent: #10B981;
+      --emerald-tint: #ECFDF5;
+      --card-shadow: 0 4px 16px -2px rgba(17, 24, 39, 0.05), 0 2px 6px -1px rgba(17, 24, 39, 0.03);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #18191B;
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Presentation Screen Container */
+    #deck-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1400px;
+      aspect-ratio: 16 / 9;
+      background: var(--bg-canvas);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Single Slide Styles */
+    .slide {
+      display: none;
+      width: 100%;
+      height: 100%;
+      padding: 3.2% 4.8% 2.8% 4.8%;
+      flex-direction: column;
+      justify-content: flex-start;
+      position: relative;
+      background-color: var(--bg-canvas);
+    }
+
+    .slide.active {
+      display: flex;
+      animation: fadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Header & Badges */
+    .slide-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .pill-blue {
+      background-color: var(--blue-tint);
+      color: var(--blue-primary);
+      border-color: #BFDBFE;
+    }
+
+    .pill-rose {
+      background-color: var(--rose-tint);
+      color: var(--rose-accent);
+      border-color: #FECDD3;
+    }
+
+    .pill-amber {
+      background-color: var(--amber-tint);
+      color: var(--amber-accent);
+      border-color: #FDE68A;
+    }
+
+    .slide-meta-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-light);
+    }
+
+    .slide-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .slide-subtitle {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      font-weight: 500;
+    }
+
+    /* Common Card Styles */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .bullet-list li {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      line-height: 1.42;
+      position: relative;
+      padding-left: 14px;
+    }
+
+    .bullet-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .bullet-list li strong {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    /* Slide 1 Styles */
+    .hero-title {
+      font-size: 3.4rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--text-main);
+      line-height: 1.05;
+      margin-top: 0.4rem;
+    }
+
+    .hero-tagline {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--blue-primary);
+      margin-top: 0.35rem;
+    }
+
+    .hero-pitch {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      max-width: 90%;
+      line-height: 1.45;
+    }
+
+    .s1-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 1.2rem;
+      margin-top: 1.4rem;
+      flex: 1;
+    }
+
+    .member-item {
+      margin-bottom: 0.7rem;
+    }
+
+    .member-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .member-reg {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      margin-left: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .member-role {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--blue-primary);
+      margin-top: 1px;
+    }
+
+    .member-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    /* Grid Layouts */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+      margin-top: 1.1rem;
+      flex: 1;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.9rem;
+      margin-top: 1rem;
+      flex: 1;
+    }
+
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex: 1;
+    }
+
+    .bottom-banner {
+      background-color: #F1F5F9;
+      border: 1px solid var(--card-border-hover);
+      border-radius: 10px;
+      padding: 0.75rem 1.2rem;
+      margin-top: 0.9rem;
+    }
+
+    .bottom-banner-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--blue-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .bottom-banner-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* Formula Banner (Slide 5) */
+    .formula-hero {
+      background: #FFFFFF;
+      border: 2px solid var(--blue-primary);
+      border-radius: 12px;
+      padding: 0.9rem 1.4rem;
+      margin-top: 0.9rem;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .formula-math {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--blue-primary);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.01em;
+    }
+
+    .formula-legend {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Thank You Slide */
+    .ty-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-top: 0.6rem;
+    }
+
+    .ty-title {
+      font-size: 3.8rem;
+      font-weight: 900;
+      color: var(--text-main);
+      letter-spacing: -0.03em;
+    }
+
+    .ty-tagline {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--blue-primary);
+      margin-top: 0.4rem;
+    }
+
+    /* Bottom Footer Bar */
+    .slide-footer {
+      position: absolute;
+      bottom: 1.2%;
+      left: 4.8%;
+      right: 4.8%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      padding-top: 6px;
+      font-size: 0.72rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    /* Navigation Controller Dock */
+    #nav-dock {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #232529;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-btn {
+      background: #32353B;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-btn:hover {
+      background: var(--blue-primary);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      background: #32353B;
+    }
+
+    .slide-counter {
+      color: #9CA3AF;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    .dock-pill {
+      color: #E5E7EB;
+      font-size: 0.78rem;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Print / PDF Styles */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      #nav-dock {
+        display: none !important;
+      }
+      #deck-wrapper {
+        box-shadow: none;
+        border-radius: 0;
+        width: 100%;
+        max-width: 100%;
+        aspect-ratio: auto;
+      }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        height: 100vh;
+        width: 100vw;
+        aspect-ratio: 16 / 9;
+        padding: 40px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Slide Deck Presentation Canvas -->
+  <div id="deck-wrapper">
+
+    <!-- ==================== SLIDE 1 ==================== -->
+    <div class="slide active" id="slide-1">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-rose">DATAQUEST 3.0 · TRACK DQWL</span>
+        <span class="slide-meta-tag">ROUND 1 PITCH</span>
+      </div>
+
+      <h1 class="hero-title">ProfiQ</h1>
+      <div class="hero-tagline">AI-Powered Employability &amp; Career Readiness Analyzer</div>
+      <p class="hero-pitch">From Unverified Resume Claims to Observable Proof of Work — Bridging the Gap Between Student Skills and Industry Role Benchmarks.</p>
+
+      <div class="s1-grid">
+        <!-- Left: Capabilities -->
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">Core Project Capabilities</div>
+          <ul class="bullet-list">
+            <li><strong>Evidence-Based Verification:</strong> Cross-validates claimed technologies against live GitHub repositories, commit velocity, and architecture rather than passive keywords.</li>
+            <li><strong>Deterministic Scoring:</strong> Mathematically balances role skill fit (60%) and code proof authenticity (40%) to eliminate resume exaggeration.</li>
+            <li><strong>Actionable Remediation:</strong> Pinpoints missing technical dependencies and constructs automated 4-week milestone roadmaps with curated resources.</li>
+            <li><strong>Placement Cell Intelligence:</strong> Provides university administrators with cohort-level readiness distributions and batch gap heatmaps.</li>
+          </ul>
+        </div>
+
+        <!-- Right: Team & Members -->
+        <div class="card">
+          <div class="card-title" style="color: var(--amber-accent);">Team: [ 3Cuties ]</div>
+          <div class="member-item">
+            <span class="member-name">Aman Tyagi</span><span class="member-reg">[25BCE1710]</span>
+            <div class="member-role">AI &amp; ML Lead</div>
+            <div class="member-desc">Gemini prompt orchestration, evidence verification heuristics, JSON schema validation, and scoring algorithms.</div>
+          </div>
+          <div class="member-item">
+            <span class="member-name">Siddhant Asati</span><span class="member-reg">[25BCE1633]</span>
+            <div class="member-role">Backend &amp; Systems Lead</div>
+            <div class="member-desc">Node/Express REST APIs, MongoDB data layer, GitHub telemetry extraction, and profile normalization.</div>
+          </div>
+          <div class="member-item">
+            <span class="member-name">Sahaj Kumar</span><span class="member-reg">[25BCE1620]</span>
+            <div class="member-role">Frontend &amp; UX Lead</div>
+            <div class="member-desc">React 18 + Vite interactive studio, real-time readiness scorecards, 3D visualizers, and placement dashboard.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Career Readiness Analyzer</span>
+        <span>Slide 1 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 2 ==================== -->
+    <div class="slide" id="slide-2">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-blue">01 · Problem Space</span>
+        <span class="slide-meta-tag">Industry &amp; Campus Friction</span>
+      </div>
+      <h2 class="slide-title">The Employability Disconnect: Claims vs. Proof</h2>
+      <p class="slide-subtitle">Why traditional resumes, ATS keyword matchers, and unverified profiles fail modern engineering hiring.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title" style="color: var(--rose-accent);">01 · The Student Dilemma</div>
+          <ul class="bullet-list">
+            <li><strong>Keyword Stuffing Trap:</strong> Students list 20+ technologies to bypass ATS filters, masking their true technical proficiency.</li>
+            <li><strong>Fragmented Identity:</strong> Proof of work is scattered across GitHub, LeetCode, portfolios, and course certificates with zero unified view.</li>
+            <li><strong>Reactive Rejections:</strong> Students only discover critical skill deficits after failing technical placement rounds when it is too late to fix.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--amber-accent);">02 · Placement Bottlenecks</div>
+          <ul class="bullet-list">
+            <li><strong>Batch Review Overload:</strong> Placement cells must evaluate 1,000+ graduating students, relying on high-level GPA rather than code readiness.</li>
+            <li><strong>Zero Cohort Telemetry:</strong> Institutions lack aggregated data to identify batch-wide technology deficits before hiring drives start.</li>
+            <li><strong>Mismatched Referrals:</strong> Students are routed to unsuitable hiring partners, resulting in poor placement conversion rates.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">03 · Recruiter Distrust</div>
+          <ul class="bullet-list">
+            <li><strong>Low Signal-to-Noise:</strong> 70%+ of applicants with polished resumes fail basic architectural and practical coding evaluations.</li>
+            <li><strong>Manual Verification Burden:</strong> Engineering managers spend hours auditing GitHub repos, commit histories, and code quality manually.</li>
+            <li><strong>Expensive Mis-Hires:</strong> Relying on self-reported resume claims creates inflated interview funnels and high recruitment rework.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bottom-banner">
+        <div class="bottom-banner-title">The Root Cause: "A resume is an unverified claim. A GitHub repo is raw data."</div>
+        <div class="bottom-banner-text">No existing platform automatically cross-references self-reported skills against demonstrable code proof to generate an explainable, benchmarked readiness score with actionable remediation.</div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Problem Space</span>
+        <span>Slide 2 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 3 ==================== -->
+    <div class="slide" id="slide-3">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-blue">02 · Proposed Solution</span>
+        <span class="slide-meta-tag">System Blueprint</span>
+      </div>
+      <h2 class="slide-title">ProfiQ: Evidence-Based Employability Intelligence</h2>
+      <p class="slide-subtitle">An end-to-end AI platform that converts raw developer claims into verifiable career readiness.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">1. Ingest &amp; Aggregate</div>
+          <ul class="bullet-list">
+            <li><strong>Resume Ingestion:</strong> PDF parsing extracts candidate bio, education, claimed skills, and projects into structured JSON.</li>
+            <li><strong>Developer Telemetry:</strong> Fetches live GitHub repositories, language distributions, and commit frequency.</li>
+            <li><strong>Target Role Selection:</strong> Candidate selects intended role benchmark (Frontend, Backend, Full Stack, or ML Engineer).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--rose-accent);">2. AI Verify &amp; Benchmark</div>
+          <ul class="bullet-list">
+            <li><strong>Artifact Cross-Check:</strong> Google Gemini cross-references claimed skills against actual repo code &amp; dependencies.</li>
+            <li><strong>Confidence Scoring:</strong> Separates verified proof from unbacked claims using deterministic heuristics.</li>
+            <li><strong>Role Matrix Comparison:</strong> Evaluates depth against standardized critical, recommended, and optional skill matrices.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--emerald-accent);">3. Quantify &amp; Remediate</div>
+          <ul class="bullet-list">
+            <li><strong>Readiness Score (0–100):</strong> Transparent, explainable metric combining skill fit (60%) and proof depth (40%).</li>
+            <li><strong>Gap Identification:</strong> Pinpoints exact missing technical dependencies required for target roles.</li>
+            <li><strong>Milestone Roadmap:</strong> Generates structured 4-week learning sprints with curated project objectives.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-top: 1rem;">
+        <div class="card" style="padding: 0.9rem 1.2rem;">
+          <div class="card-title" style="color: var(--amber-accent); margin-bottom: 4px;">Why It Is Better: Evidence Over Keywords</div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">Unlike traditional ATS checkers that only perform shallow string matching, ProfiQ establishes ground truth by inspecting actual repository commits, code architecture, and package manifests to verify whether a candidate can genuinely execute.</p>
+        </div>
+        <div class="card" style="padding: 0.9rem 1.2rem;">
+          <div class="card-title" style="color: var(--rose-accent); margin-bottom: 4px;">The Innovation: Actionable Career Remediation</div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">ProfiQ transforms evaluation from a passive 'judgment' into an active developmental roadmap. Students receive transparent explanations for every deducted point and a prescriptive milestone plan to turn red skill deficits into verified green badges.</p>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Proposed Solution</span>
+        <span>Slide 3 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 4 ==================== -->
+    <div class="slide" id="slide-4">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-blue">03 · System Architecture</span>
+        <span class="slide-meta-tag">Engineering Foundation</span>
+      </div>
+      <h2 class="slide-title">Modular Multi-Tiered System Architecture</h2>
+      <p class="slide-subtitle">Engineered for high-throughput profile ingestion, robust telemetry extraction, and deterministic AI scoring.</p>
+
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">Client Tier</div>
+          <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); margin-top: -6px; margin-bottom: 8px;">React 18 + Vite</div>
+          <ul class="bullet-list">
+            <li><strong>Candidate Studio:</strong> Interactive profile input, role picker, and live readiness dials.</li>
+            <li><strong>Visual Telemetry:</strong> Radar charts, verified vs. unbacked matrices, and 3D dials.</li>
+            <li><strong>Placement Portal:</strong> Cohort-wide analytics, distribution heatmaps, and batch tables.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--emerald-accent);">Backend API</div>
+          <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); margin-top: -6px; margin-bottom: 8px;">Node.js + Express</div>
+          <ul class="bullet-list">
+            <li><strong>Ingestion Engine:</strong> Multipart parser handling resumes &amp; candidate profiles.</li>
+            <li><strong>Telemetry Service:</strong> GitHub REST API connector extracting repo stats &amp; commits.</li>
+            <li><strong>Orchestrator:</strong> Manages asynchronous AI pipelines and service normalization.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--rose-accent);">Intelligence Tier</div>
+          <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); margin-top: -6px; margin-bottom: 8px;">Google Gemini API</div>
+          <ul class="bullet-list">
+            <li><strong>Skill Extraction:</strong> Structured NER identifying explicit/implicit competencies.</li>
+            <li><strong>Artifact Verifier:</strong> Heuristics and LLM cross-check matching code against claims.</li>
+            <li><strong>Scoring &amp; Roadmap:</strong> Deterministic scoring and 4-week sprint generator.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--amber-accent);">Persistence Tier</div>
+          <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-light); margin-top: -6px; margin-bottom: 8px;">MongoDB + Schemas</div>
+          <ul class="bullet-list">
+            <li><strong>Unified Profiles:</strong> Stores normalized claims, verified artifacts, and telemetry.</li>
+            <li><strong>Role Benchmarks:</strong> Taxonomies mapping Critical, Recommended, and Optional skills.</li>
+            <li><strong>Roadmaps &amp; Reports:</strong> Historical tracking of student readiness over time.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; margin-top: 1rem;">
+        <div class="card" style="padding: 0.75rem 1rem;">
+          <div class="card-title" style="color: var(--blue-primary); margin-bottom: 3px; font-size: 0.78rem;">Key Architectural Decision</div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.35;">Decoupled AI service allows upgrading or swapping LLMs without modifying core DB or UI schemas.</p>
+        </div>
+        <div class="card" style="padding: 0.75rem 1rem;">
+          <div class="card-title" style="color: var(--rose-accent); margin-bottom: 3px; font-size: 0.78rem;">Hardest Challenge Solved</div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.35;">Evidence attribution heuristics connecting vague resume claims with concrete repository commit graphs.</p>
+        </div>
+        <div class="card" style="padding: 0.75rem 1rem;">
+          <div class="card-title" style="color: var(--emerald-accent); margin-bottom: 3px; font-size: 0.78rem;">Validation &amp; Stability</div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.35;">Strict JSON Schema constraints guarantee 100% deterministic outputs and eliminate hallucinations.</p>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · System Architecture</span>
+        <span>Slide 4 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 5 ==================== -->
+    <div class="slide" id="slide-5">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-blue">04 · Evaluation Logic</span>
+        <span class="slide-meta-tag">Deterministic Metrics</span>
+      </div>
+      <h2 class="slide-title">Evidence-Based Mathematical Scoring Methodology</h2>
+      <p class="slide-subtitle">A transparent, explainable formula that rewards verified engineering competence and penalizes unbacked claims.</p>
+
+      <div class="formula-hero">
+        <div class="formula-math">Readiness Score (R) = (Skill Match × 0.60) + (Evidence Verification × 0.40)</div>
+        <div class="formula-legend">Where: S = Skill Match Score (0–100) based on industry role benchmarks | E = Evidence Verification Score (0–100) based on code proof</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; margin-top: 1rem; flex: 1;">
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">1. Skill Match Score (S · 60% Weight)</div>
+          <ul class="bullet-list">
+            <li><strong>Hierarchical Role Weights:</strong> Evaluates skills against curated industry matrices according to role criticality:</li>
+            <li><strong>• Critical Skills (1.0× Weight):</strong> Foundational technologies without which candidate cannot operate (e.g., React &amp; JS for Frontend).</li>
+            <li><strong>• Recommended Skills (0.7× Weight):</strong> Modern production tooling that elevates output (e.g., TypeScript, Tailwind, REST APIs).</li>
+            <li><strong>• Optional Skills (0.4× Weight):</strong> Value-add proficiencies (e.g., Docker, GraphQL, Jest).</li>
+            <li><strong>Coverage Ratio:</strong> Normalizes candidate skills directly against active industry requirements.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--rose-accent);">2. Evidence Verification Score (E · 40% Weight)</div>
+          <ul class="bullet-list">
+            <li><strong>Evidence Confidence Hierarchy:</strong> Each claimed skill is assigned an evidence tier backed by observable data:</li>
+            <li><strong>• High Confidence (0.85 – 1.0):</strong> Public repo with verified commits, active velocity, and matching codebase.</li>
+            <li><strong>• Moderate Confidence (0.50 – 0.70):</strong> Listed academic project, course certification, or live portfolio demo URL.</li>
+            <li><strong>• Low / Unbacked (0.10 – 0.30):</strong> Resume keyword claim with zero observable proof or commit history.</li>
+            <li><strong>Penalty Mechanism:</strong> Unbacked claims dilute the overall score, directly discouraging resume exaggeration.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Evaluation Logic</span>
+        <span>Slide 5 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 6 ==================== -->
+    <div class="slide" id="slide-6">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-blue">05 · Product Capabilities</span>
+        <span class="slide-meta-tag">Dual-Perspective Platform</span>
+      </div>
+      <h2 class="slide-title">Dual-Perspective Platform: Students &amp; Placement Cells</h2>
+      <p class="slide-subtitle">Delivering immediate diagnostic value for candidate growth and powerful cohort analytics for university administrators.</p>
+
+      <div class="grid-2x2">
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">Candidate Studio: Readiness Dial</div>
+          <ul class="bullet-list">
+            <li><strong>Composite Readiness Score:</strong> High-impact visual score dial reflecting current employability level (0–100).</li>
+            <li><strong>Domain Radar Breakdown:</strong> Visualizes candidate strength across Core Languages, Frameworks, Architecture, and Tooling.</li>
+            <li><strong>Target Benchmark Threshold:</strong> Clear indicators showing whether candidate meets Junior, Mid, or Senior entry bars.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--rose-accent);">Evidence Matrix &amp; Gap Visualizer</div>
+          <ul class="bullet-list">
+            <li><strong>Verified vs. Unbacked Claims:</strong> Displays an 80%+ evidence coverage target, clearly tagging proof sources.</li>
+            <li><strong>Critical Skill Deficits:</strong> Flags essential role requirements that are missing from candidate profiles.</li>
+            <li><strong>Interactive Inspect Mode:</strong> Allows candidates to see exactly which GitHub repos validated each skill.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--emerald-accent);">Personalized Milestone Roadmap</div>
+          <ul class="bullet-list">
+            <li><strong>4-Week Sprint Schedule:</strong> Automated sprint breakdown focusing on closing critical skill deficits step by step.</li>
+            <li><strong>Curated Learning Links:</strong> Recommends high-quality documentation, guided projects, and tutorials.</li>
+            <li><strong>Proof of Work Deliverables:</strong> Prescribes specific GitHub project milestones to generate tangible proof.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--amber-accent);">Institutional Placement Intelligence</div>
+          <ul class="bullet-list">
+            <li><strong>Batch Skill Heatmaps:</strong> Placement cells view cohort-wide trends and common technological weaknesses.</li>
+            <li><strong>Pre-Placement Interventions:</strong> Enables organizing targeted bootcamps before recruitment drives commence.</li>
+            <li><strong>Verified Candidate Shortlisting:</strong> Allows recruiters to filter students by demonstrable code proof rather than GPA alone.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Product Capabilities</span>
+        <span>Slide 6 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 7 ==================== -->
+    <div class="slide" id="slide-7">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-blue">06 · Defensibility &amp; Horizon</span>
+        <span class="slide-meta-tag">Market Strategy &amp; Growth</span>
+      </div>
+      <h2 class="slide-title">Feasibility, Competitive Moat &amp; Growth Horizon</h2>
+      <p class="slide-subtitle">Low operational run-rates, clear unfair advantages over legacy tools, and a defined post-hackathon roadmap.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title" style="color: var(--rose-accent);">Competitive Moat</div>
+          <ul class="bullet-list">
+            <li><strong>Traditional ATS:</strong> Parses resume strings blindly; easily gamed by buzzword stuffing with zero evidence verification.</li>
+            <li><strong>LinkedIn Profiles:</strong> Relies solely on unverified self-reporting and social endorsements without code audits.</li>
+            <li><strong>Generic AI Chatbots:</strong> Provides generic advice without ingesting authentic developer artifacts or scoring mathematically.</li>
+            <li><strong>ProfiQ Advantage:</strong> Only platform combining multi-platform proof of work + benchmark alignment + automated remediation.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--amber-accent);">Feasibility &amp; Economics</div>
+          <ul class="bullet-list">
+            <li><strong>Minimal API Costs:</strong> Structured JSON prompts and token optimization keep LLM execution costs to fractions of a cent per profile.</li>
+            <li><strong>Deterministic Caching:</strong> Caches GitHub repository metadata and benchmark matrices to eliminate redundant API calls.</li>
+            <li><strong>Zero Infrastructure Barrier:</strong> Built on lightweight Node.js and MongoDB; easily deployed to serverless environments.</li>
+            <li><strong>Privacy &amp; Security:</strong> Inspects only public code artifacts; no intrusive access to private student credentials.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--emerald-accent);">Future Development Horizon</div>
+          <ul class="bullet-list">
+            <li><strong>Phase 1: Multi-Platform Ingestion:</strong> Expand connectors to LeetCode, Codeforces, HackerRank, and GitLab for algorithmic telemetry.</li>
+            <li><strong>Phase 2: University SIS Integration:</strong> Automated batch sync with university ERPs to track student growth across semesters.</li>
+            <li><strong>Phase 3: Recruiter Search Mode:</strong> Allow tech recruiters to query candidate pools by verified skills (e.g., 'React + Docker &gt; 85% proof').</li>
+            <li><strong>Phase 4: AI Mock Interviewer:</strong> Interactive voice agent that quizzes candidates specifically on their verified code repositories.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Defensibility &amp; Horizon</span>
+        <span>Slide 7 / 8</span>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 8 ==================== -->
+    <div class="slide" id="slide-8">
+      <div class="slide-badge-row">
+        <span class="pill-badge pill-rose">DATAQUEST 3.0 · ROUND 1 · TRACK DQWL</span>
+        <span class="slide-meta-tag">CLOSING &amp; Q/A</span>
+      </div>
+
+      <div class="ty-center">
+        <h1 class="ty-title">THANK YOU</h1>
+        <div class="ty-tagline">ProfiQ — Turning Resume Claims into Verifiable Career Readiness</div>
+      </div>
+
+      <div class="grid-3" style="margin-top: 1.5rem;">
+        <div class="card">
+          <div class="card-title" style="color: var(--blue-primary);">Project Vision</div>
+          <ul class="bullet-list">
+            <li><strong>From Claims to Proof:</strong> Empowering engineering students to back their claims with demonstrable code.</li>
+            <li><strong>Data-Driven Placement:</strong> Giving university placement cells actionable cohort telemetry.</li>
+            <li><strong>Hiring Confidence:</strong> Providing technical recruiters with verified talent pipelines.</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--amber-accent);">Team [ 3Cuties ]</div>
+          <ul class="bullet-list">
+            <li><strong>Aman Tyagi</strong> (25BCE1710) — AI &amp; ML Lead</li>
+            <li><strong>Siddhant Asati</strong> (25BCE1633) — Backend &amp; Systems Lead</li>
+            <li><strong>Sahaj Kumar</strong> (25BCE1620) — Frontend &amp; UX Lead</li>
+            <li><strong>Institution:</strong> Vellore Institute of Technology (VIT)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="color: var(--emerald-accent);">Open For Q&amp;A</div>
+          <ul class="bullet-list">
+            <li><strong>Live Demonstration:</strong> Ready for walkthrough of the Candidate Studio &amp; Placement Dashboard.</li>
+            <li><strong>Codebase &amp; Tests:</strong> Modular monorepo with automated unit &amp; end-to-end test suites.</li>
+            <li><strong>Discussion:</strong> We welcome questions on our scoring formula and verification heuristics.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>ProfiQ · Presentation Conclusion</span>
+        <span>Slide 8 / 8</span>
+      </div>
+    </div>
+
+  </div> <!-- End #deck-wrapper -->
+
+  <!-- Navigation Controller Dock -->
+  <div id="nav-dock">
+    <button class="nav-btn" id="prev-btn" onclick="prevSlide()">← Prev</button>
+    <div class="slide-counter" id="slide-num">Slide 1 / 8</div>
+    <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next →</button>
+    <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.2);"></div>
+    <button class="nav-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+    <button class="nav-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+    <div class="dock-pill">⌨️ Use Arrow Keys</div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 8;
+
+    function showSlide(n) {
+      if (n < 1) n = 1;
+      if (n > totalSlides) n = totalSlides;
+      currentSlide = n;
+
+      for (let i = 1; i <= totalSlides; i++) {
+        const el = document.getElementById(`slide-${i}`);
+        if (el) el.classList.remove('active');
+      }
+
+      const activeEl = document.getElementById(`slide-${currentSlide}`);
+      if (activeEl) activeEl.classList.add('active');
+
+      document.getElementById('slide-num').textContent = `Slide ${currentSlide} / ${totalSlides}`;
+      document.getElementById('prev-btn').disabled = (currentSlide === 1);
+      document.getElementById('next-btn').disabled = (currentSlide === totalSlides);
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        showSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        showSlide(currentSlide - 1);
+      }
+    }
+
+    function toggleFullscreen() {
+      const elem = document.getElementById('deck-wrapper');
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'Home') {
+        showSlide(1);
+      } else if (e.key === 'End') {
+        showSlide(totalSlides);
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      }
+    });
+
+    // Initialize
+    showSlide(1);
+  </script>
+</body>
+</html>

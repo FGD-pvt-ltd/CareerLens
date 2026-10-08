@@ -40,7 +40,7 @@ export default function App() {
 
   return (
     <div className="profiq-root">
-      {/* Top Navigation (SayBriefly-style clean bar) */}
+      {/* Top Navigation (Clean, elegant bar) */}
       <header className="site-nav">
         <div className="site-nav-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
@@ -53,19 +53,19 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
-              PROFIQ
+              ProfiQ
               <span className="brand-dot" />
             </a>
             <span className="mono-token" style={{
-              fontSize: '0.68rem',
+              fontSize: '0.7rem',
               color: 'var(--text-secondary)',
               background: 'var(--bg-warm)',
-              padding: '2px 8px',
+              padding: '2px 9px',
               borderRadius: '9999px',
               border: '1px solid var(--border-soft)',
               fontWeight: 600
             }}>
-              VERIFIED WITH REAL CODE
+              Verified Code Intelligence
             </span>
           </div>
 
@@ -122,6 +122,7 @@ export default function App() {
       {activeView === 'dashboard' ? (
         <DashboardView 
           candidateProfile={currentCandidate}
+          onReanalyze={handleOpenModal}
           onBackToStory={() => {
             setActiveView('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -130,37 +131,36 @@ export default function App() {
       ) : (
         <main>
           {/* ==================================================
-              HERO SECTION (Modeled directly on SayBriefly template)
+              HERO SECTION (Punchy copy & smooth animation flow)
               ================================================== */}
-          <section className="hero-section" style={{ textAlign: 'center', padding: '4.5rem 0 3rem' }}>
+          <section className="hero-section" style={{ textAlign: 'center', padding: '4.25rem 0 2.5rem' }}>
             <div className="container">
-              {/* Top Trust Pill Badge */}
-              <div>
-                <span className="template-top-pill">
+              {/* Top Trust Pill Badge with subtle floating animation */}
+              <div className="animate-hero-1">
+                <span className="template-top-pill float-badge">
                   <Star size={13} fill="#B76E52" color="#B76E52" />
-                  91% precision rate across 1,420 senior engineering audits
+                  Verified Engineering Readiness · 1,420+ Benchmark Audits
                 </span>
               </div>
 
               {/* Large Display Headline with signature word transition */}
-              <div style={{ maxWidth: '920px', margin: '0 auto' }}>
-                <h1 className="template-display-headline">
-                  One instrument, that's all your career readiness needs.
+              <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+                <h1 className="template-display-headline animate-hero-2" style={{ letterSpacing: '-0.025em' }}>
+                  One instrument for your career readiness.
                 </h1>
                 
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.75rem', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
+                <div className="animate-hero-2" style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.65rem', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                   KNOW WHERE YOU <HeroWordMorph />
                 </div>
 
-                <p className="editorial-subhead" style={{ margin: '1.25rem auto 0', maxWidth: '680px' }}>
-                  Turn resume bullets into verified evidence, match your skills to real roles, 
-                  and follow a clear step-by-step roadmap in one beautiful app.
+                <p className="editorial-subhead animate-hero-3" style={{ margin: '1rem auto 0', maxWidth: '620px', fontSize: '1.05rem', lineHeight: '1.55' }}>
+                  Turn resume claims into verified evidence. Quantify role fit and follow a clear step-by-step roadmap with live GitHub telemetry.
                 </p>
 
-                {/* Dual Pill Action Buttons */}
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2.25rem', flexWrap: 'wrap' }}>
+                {/* Dual Action Buttons */}
+                <div className="animate-hero-4" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.85rem', flexWrap: 'wrap' }}>
                   <button className="btn-pill-primary" onClick={handleOpenModal}>
-                    It's Free → Analyse My Profile!
+                    Analyse My Profile →
                   </button>
                   <button 
                     className="btn-pill-outline"
@@ -170,38 +170,34 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="mono-token" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.85rem' }}>
-                  no resume exaggeration required • backed by real GitHub work.
-                </div>
-
-                {/* Standards & Social Proof Bar */}
-                <div style={{
+                {/* Streamlined Standards Proof Strip */}
+                <div className="animate-hero-4" style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '1.25rem',
-                  marginTop: '2.5rem',
-                  paddingTop: '1.75rem',
+                  marginTop: '2.25rem',
+                  paddingTop: '1.25rem',
                   borderTop: '1px solid var(--border-soft)',
                   flexWrap: 'wrap'
                 }}>
                   <span className="label-caps" style={{ fontSize: '0.72rem' }}>
-                    Evaluated across standards from:
+                    Standards:
                   </span>
-                  <div style={{ display: 'flex', gap: '1.75rem', alignItems: 'center', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                     <span>GitHub Repositories</span>
                     <span>•</span>
-                    <span>Real Codebases</span>
-                    <span>•</span>
-                    <span>Cloud Deployments</span>
+                    <span>Live Codebases</span>
                     <span>•</span>
                     <span>Clean Code Standards</span>
                   </div>
                 </div>
               </div>
 
-              {/* The Signature Showcase & 5-Tile Attached Dock Container */}
-              <HeroShowcaseDock onOpenModal={handleOpenModal} />
+              {/* The Showcase & Attached Dock Container */}
+              <div className="animate-hero-4">
+                <HeroShowcaseDock onOpenModal={handleOpenModal} />
+              </div>
             </div>
           </section>
 
@@ -221,19 +217,19 @@ export default function App() {
           <CareerReadinessStudio onOpenModal={handleOpenModal} />
 
           {/* Pre-Footer Action Banner */}
-          <section style={{ padding: '6rem 0', background: 'var(--bg-primary)', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}>
+          <section style={{ padding: '4.5rem 0', background: 'var(--bg-primary)', borderTop: '1px solid var(--border-soft)', textAlign: 'center' }}>
             <div className="container-narrow">
               <span className="label-caps" style={{ color: 'var(--accent-warm)' }}>
                 EXPERIENCE THE DIFFERENCE
               </span>
-              <h2 className="editorial-headline" style={{ fontSize: '2.5rem', marginTop: '0.5rem' }}>
-                READY TO AUDIT YOUR PROFILE?
+              <h2 className="editorial-headline" style={{ fontSize: '2.25rem', marginTop: '0.4rem', letterSpacing: '-0.02em' }}>
+                Ready to audit your engineering readiness?
               </h2>
-              <p className="editorial-subhead" style={{ margin: '1rem auto 2.5rem' }}>
+              <p className="editorial-subhead" style={{ margin: '0.75rem auto 2rem', maxWidth: '580px' }}>
                 Connect your repository signals, review your multi-factor readiness score, 
-                and receive a customized roadmap to close key gaps.
+                and receive a customized milestone roadmap.
               </p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1.25rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <button className="btn-pill-primary" onClick={handleOpenModal}>
                   Analyse My Profile →
                 </button>
@@ -259,10 +255,10 @@ export default function App() {
           <div className="footer-inner">
             <div>
               <div className="brand-mark" style={{ fontSize: '1.1rem' }}>
-                PROFIQ
+                ProfiQ
                 <span className="brand-dot" />
               </div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem', maxWidth: '360px' }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.4rem', maxWidth: '360px' }}>
                 Evidence-backed career intelligence. Minimal, warm, precise, human.
               </p>
             </div>
@@ -300,9 +296,9 @@ export default function App() {
             </div>
 
             <div className="footer-copy">
-              <div>© 2026 PROFIQ // Precision Career Intelligence</div>
+              <div>© 2026 ProfiQ // Precision Career Intelligence</div>
               <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                White-first editorial design system. No AI hype. Pure verified signal.
+                White-first editorial design system. Pure verified signal.
               </div>
             </div>
           </div>

@@ -92,11 +92,11 @@ export default function CardStack3D() {
       if (type === 'profile') {
         // Top Header line
         ctx.fillStyle = '#171716';
-        ctx.font = 'bold 34px "Manrope", sans-serif';
-        ctx.fillText('PROFIQ VERIFIED INSTRUMENT', 56, 90);
+        ctx.font = 'bold 34px "Plus Jakarta Sans", sans-serif';
+        ctx.fillText('ProfiQ Verified Instrument', 56, 90);
 
         ctx.fillStyle = '#686761';
-        ctx.font = '500 22px "JetBrains Mono", monospace';
+        ctx.font = '600 22px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('ID // REF-2026-X89', 56, 130);
 
         // Accent tag (Terracotta)
@@ -106,7 +106,7 @@ export default function CardStack3D() {
         ctx.lineWidth = 2;
         ctx.strokeRect(720, 56, 240, 48);
         ctx.fillStyle = '#B76E52';
-        ctx.font = 'bold 20px "JetBrains Mono", monospace';
+        ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('CONFIDENCE 91%', 745, 88);
 
         // Divider
@@ -119,11 +119,11 @@ export default function CardStack3D() {
 
         // Candidate Profile info
         ctx.fillStyle = '#171716';
-        ctx.font = 'bold 44px "Manrope", sans-serif';
+        ctx.font = 'bold 44px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('ALEX MORGAN', 56, 250);
 
         ctx.fillStyle = '#686761';
-        ctx.font = '400 24px "Manrope", sans-serif';
+        ctx.font = '500 24px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('Senior Full-Stack Engineer • React & Systems', 56, 295);
 
         // Verification metrics row
@@ -133,30 +133,30 @@ export default function CardStack3D() {
         ctx.strokeRect(56, 350, 912, 140);
 
         ctx.fillStyle = '#686761';
-        ctx.font = '500 20px "JetBrains Mono", monospace';
+        ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('JOB READINESS', 90, 400);
         ctx.fillText('VERIFIED SKILLS', 390, 400);
         ctx.fillText('CONSISTENCY', 690, 400);
 
         ctx.fillStyle = '#171716';
-        ctx.font = 'bold 44px "JetBrains Mono", monospace';
+        ctx.font = 'bold 44px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('78/100', 90, 455);
         ctx.fillText('14 PROVEN', 390, 455);
         ctx.fillText('94%', 690, 455);
 
         // Micro footer
         ctx.fillStyle = '#8E8D86';
-        ctx.font = '500 18px "JetBrains Mono", monospace';
+        ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('STATUS: CLAIM AUDIT PASSED • GITHUB SYNCHRONIZED', 56, 560);
       } else if (type === 'evidence') {
         // Evidence stack card
         ctx.fillStyle = '#171716';
-        ctx.font = 'bold 32px "Manrope", sans-serif';
+        ctx.font = 'bold 32px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('CONVERGED EVIDENCE STREAM', 56, 90);
 
         // Terracotta tag
         ctx.fillStyle = '#B76E52';
-        ctx.font = 'bold 22px "JetBrains Mono", monospace';
+        ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('4 PROJECTS • 127 COMMITS', 56, 140);
 
         // Divider
@@ -168,21 +168,21 @@ export default function CardStack3D() {
         ctx.stroke();
 
         ctx.fillStyle = '#686761';
-        ctx.font = '400 26px "Manrope", sans-serif';
+        ctx.font = '500 26px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('1. core-platform (React, TypeScript, GraphQL) — 64 commits', 56, 250);
         ctx.fillText('2. distributed-cache (Go, Redis architecture) — 38 commits', 56, 310);
         ctx.fillText('3. design-tokens (Design System & Web Components) — 25 commits', 56, 370);
 
         ctx.fillStyle = '#7C866B';
-        ctx.font = 'bold 22px "JetBrains Mono", monospace';
+        ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('✓ RESUME CLAIM CONFIRMED VIA REPOSITORY RECURSION', 56, 480);
       } else {
         // Baseline card
         ctx.fillStyle = '#171716';
-        ctx.font = 'bold 32px "Manrope", sans-serif';
+        ctx.font = 'bold 32px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('ROLE FIT REASONING ENGINE', 56, 90);
         ctx.fillStyle = '#C5A15A';
-        ctx.font = 'bold 22px "JetBrains Mono", monospace';
+        ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
         ctx.fillText('TARGET: FULL STACK ARCHITECT', 56, 140);
 
         ctx.strokeStyle = '#E7E5DF';

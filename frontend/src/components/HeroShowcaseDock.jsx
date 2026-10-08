@@ -63,13 +63,13 @@ export default function HeroShowcaseDock({ onOpenModal }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--accent-warm)' }} />
-            <span className="mono-token" style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-              LIVE CANDIDATE BRIEF // {(dockItems.find(d => d.id === activeTab)?.title || activeTab).toUpperCase()}
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+              Live Candidate Brief · {dockItems.find(d => d.id === activeTab)?.title || activeTab}
             </span>
           </div>
 
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            INTERACTIVE DOCK // SELECT A TILE BELOW
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+            Select a feature tile below
           </span>
         </div>
 

@@ -25,7 +25,7 @@ import {
  * Main: Real dynamically calculated Job Readiness score, Meter of Acceptance,
  * Coding Platform links (LeetCode/Codeforces/etc.), and tailored evidence metrics.
  */
-export default function DashboardView({ onBackToStory, candidateProfile }) {
+export default function DashboardView({ onBackToStory, candidateProfile, onReanalyze }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [profile, setProfile] = useState(candidateProfile);
   const [githubSyncUrl, setGithubSyncUrl] = useState('');
@@ -487,11 +487,20 @@ export default function DashboardView({ onBackToStory, candidateProfile }) {
               </span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button className="btn-pill-outline btn-sm" onClick={onBackToStory} style={{ padding: '0.45rem 1.1rem', fontSize: '0.82rem' }}>
-              ← Back to Scroll Story
+          <div style={{ display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
+            <button className="btn-pill-outline btn-sm" onClick={onBackToStory} style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}>
+              ← Overview
             </button>
-            <button className="btn-pill-primary btn-sm" onClick={() => window.print()} style={{ padding: '0.45rem 1.1rem', fontSize: '0.82rem' }}>
+            {onReanalyze && (
+              <button 
+                className="btn-pill-outline btn-sm" 
+                onClick={onReanalyze} 
+                style={{ padding: '0.45rem 1rem', fontSize: '0.82rem', borderColor: 'var(--accent-warm)', color: 'var(--accent-warm)', fontWeight: 600 }}
+              >
+                Re-evaluate Profile
+              </button>
+            )}
+            <button className="btn-pill-primary btn-sm" onClick={() => window.print()} style={{ padding: '0.45rem 1rem', fontSize: '0.82rem' }}>
               Export Audit PDF
             </button>
           </div>

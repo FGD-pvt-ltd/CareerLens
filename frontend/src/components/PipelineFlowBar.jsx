@@ -32,9 +32,8 @@ export default function PipelineFlowBar({ onSelectView, activeView }) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.45rem',
-                  fontFamily: 'var(--font-mono)',
                   fontSize: '0.78rem',
-                  fontWeight: isActive ? 700 : 500,
+                  fontWeight: isActive ? 700 : 600,
                   color: isActive ? 'var(--accent-warm)' : 'var(--text-secondary)'
                 }}
               >

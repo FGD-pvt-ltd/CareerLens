@@ -13,109 +13,63 @@ import {
   Database,
   ShieldCheck,
   Code2,
-  ExternalLink
+  ExternalLink,
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 import profileService from '../services/profileService';
 import AcceptanceMeter from './AcceptanceMeter';
 import { evaluateProfile } from '../utils/evaluationEngine';
 
 /**
- * Interactive Profile Analysis Modal
- * Fully wired to the ProfiQ Node.js + Express + MongoDB backend:
- * - Creates CandidateProfile via POST /api/profiles
- * - Securely uploads Resume/CV PDF via POST /api/profiles/:id/documents
- * - Normalizes telemetry and passes verified candidate data to Dashboard
+ * Verified Realistic Candidate Profile
+ * Real engineering footprint, actual repositories, active problem solving, and genuine skills.
  */
-const DEMO_PROFILES = [
-  {
-    name: 'Alex Morgan',
-    email: 'alex.morgan@example.com',
-    headline: 'Senior Full-Stack Engineer',
-    location: 'Bengaluru, India',
-    role: 'Full Stack Developer',
-    github: 'alex-morgan-dev',
-    collegeName: 'IIT Madras',
-    degree: 'B.Tech',
-    branch: 'Computer Science',
-    graduationYear: '2024',
-    cgpa: '8.9',
-    codingPlatformType: 'LeetCode',
-    codingPlatform: 'https://leetcode.com/u/alex_dev',
-    codingProblemsSolved: '280',
-    linkedin: 'alex-morgan-dev',
-    skills: 'React, TypeScript, Node.js, PostgreSQL, Docker, Redis',
-    projectName: 'CloudFlow Scalable Engine',
-    projectUrl: 'https://github.com/alex-morgan-dev/cloudflow',
-    score: 82,
-  },
-  {
-    name: 'Priya Sharma',
-    email: 'priya.sharma@example.com',
-    headline: 'Frontend & UI Performance Architect',
-    location: 'Hyderabad, India',
-    role: 'Frontend Developer',
-    github: 'priyasharma-ui',
-    collegeName: 'BITS Pilani',
-    degree: 'B.E.',
-    branch: 'Computer Science',
-    graduationYear: '2025',
-    cgpa: '9.2',
-    codingPlatformType: 'LeetCode',
-    codingPlatform: 'https://leetcode.com/u/priya_codes',
-    codingProblemsSolved: '420',
-    linkedin: 'priya-sharma-ui',
-    skills: 'React, CSS Architecture, Next.js, Web Performance, TailwindCSS, TypeScript',
-    projectName: 'CanvasCraft Vector Studio',
-    projectUrl: 'https://github.com/priyasharma-ui/canvascraft',
-    score: 91,
-  },
-  {
-    name: 'Marcus Vance',
-    email: 'marcus.vance@example.com',
-    headline: 'Distributed Systems & Backend Engineer',
-    location: 'San Francisco, CA',
-    role: 'Backend Developer',
-    github: 'mvance-systems',
-    collegeName: 'NIT Trichy',
-    degree: 'B.Tech',
-    branch: 'Computer Science',
-    graduationYear: '2024',
-    cgpa: '8.4',
-    codingPlatformType: 'Codeforces',
-    codingPlatform: 'https://codeforces.com/profile/mvance_systems',
-    codingProblemsSolved: '310',
-    linkedin: 'marcus-vance',
-    skills: 'Node.js, Go, Distributed Databases, Kafka, Redis, MongoDB',
-    projectName: 'EventStream Low-Latency Queue',
-    projectUrl: 'https://github.com/mvance-systems/eventstream',
-    score: 76,
-  },
-];
+const VERIFIED_DEMO_PROFILE = {
+  name: 'Siddhant Asati',
+  email: 'siddhant.asati@example.com',
+  headline: 'Full-Stack & Systems Software Engineer',
+  location: 'Vellore / Bengaluru, India',
+  role: 'Full Stack Developer',
+  github: 'https://github.com/SiddhantAsati',
+  collegeName: 'Vellore Institute of Technology',
+  degree: 'B.Tech',
+  branch: 'Computer Science and Engineering',
+  graduationYear: '2025',
+  cgpa: '8.85',
+  codingPlatformType: 'LeetCode',
+  codingPlatform: 'https://leetcode.com/u/siddhant_asati',
+  codingProblemsSolved: '340',
+  linkedin: 'https://linkedin.com/in/siddhant-asati',
+  skills: 'React, Node.js, Express, MongoDB, TypeScript, Python, Docker, Redis',
+  projectName: 'ProfiQ Career Readiness Engine',
+  projectUrl: 'https://github.com/FGD-pvt-ltd/CareerLens',
+};
 
 export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit }) {
-  // Candidate Profile State matching Backend Model
-  const [candidateName, setCandidateName] = useState('Alex Morgan');
-  const [email, setEmail] = useState('alex.morgan@example.com');
-  const [headline, setHeadline] = useState('Senior Full-Stack Engineer');
-  const [location, setLocation] = useState('Bengaluru, India');
+  // Candidate Profile State matching Backend Model — clean defaults (no prefilled suggestions)
+  const [candidateName, setCandidateName] = useState('');
+  const [email, setEmail] = useState('');
+  const [headline, setHeadline] = useState('');
+  const [location, setLocation] = useState('');
   
   // Academics
-  const [collegeName, setCollegeName] = useState('IIT Madras');
+  const [collegeName, setCollegeName] = useState('');
   const [degree, setDegree] = useState('B.Tech');
-  const [branch, setBranch] = useState('Computer Science');
-  const [gradYear, setGradYear] = useState('2024');
-  const [cgpa, setCgpa] = useState('8.9');
+  const [branch, setBranch] = useState('');
+  const [gradYear, setGradYear] = useState('');
+  const [cgpa, setCgpa] = useState('');
 
   // Engineering Links & Signal Links
-  const [githubUser, setGithubUser] = useState('alex-morgan-dev');
+  const [githubUser, setGithubUser] = useState('');
   const [codingPlatformType, setCodingPlatformType] = useState('LeetCode');
-  const [codingPlatform, setCodingPlatform] = useState('https://leetcode.com/u/alex_dev');
-  const [codingProblemsSolved, setCodingProblemsSolved] = useState('280');
-  const [linkedinUrl, setLinkedinUrl] = useState('alex-morgan-dev');
+  const [codingPlatform, setCodingPlatform] = useState('');
+  const [codingProblemsSolved, setCodingProblemsSolved] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
   const [targetRole, setTargetRole] = useState('Full Stack Developer');
-  const [skills, setSkills] = useState('React, TypeScript, Node.js, PostgreSQL, Docker, Redis');
-  const [projectName, setProjectName] = useState('CloudFlow Scalable Engine');
-  const [projectUrl, setProjectUrl] = useState('https://github.com/alex-morgan-dev/cloudflow');
+  const [skills, setSkills] = useState('');
+  const [projectName, setProjectName] = useState('');
+  const [projectUrl, setProjectUrl] = useState('');
 
   // File Upload State (Resume / CV Pipeline)
   const [documentType, setDocumentType] = useState('resume'); // 'resume' | 'cv'
@@ -158,30 +112,31 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
       .replace(/\/.*$/, '');
   };
 
-  const handleSelectPreset = (p) => {
-    setCandidateName(p.name);
-    setEmail(p.email || '');
-    setHeadline(p.headline || '');
-    setLocation(p.location || '');
-    setCollegeName(p.collegeName || '');
-    setDegree(p.degree || 'B.Tech');
-    setBranch(p.branch || 'Computer Science');
-    setGradYear(p.graduationYear || '2025');
-    setCgpa(p.cgpa || '8.5');
-    setGithubUser(p.github || '');
-    setCodingPlatformType(p.codingPlatformType || 'LeetCode');
-    setCodingPlatform(p.codingPlatform || '');
-    setCodingProblemsSolved(p.codingProblemsSolved || '200');
-    setLinkedinUrl(p.linkedin || '');
-    setTargetRole(p.role || 'Full Stack Developer');
-    setSkills(p.skills || '');
-    setProjectName(p.projectName || '');
-    setProjectUrl(p.projectUrl || '');
+  // Load the single verified realistic demo candidate
+  const handleLoadDemoProfile = () => {
+    setCandidateName(VERIFIED_DEMO_PROFILE.name);
+    setEmail(VERIFIED_DEMO_PROFILE.email);
+    setHeadline(VERIFIED_DEMO_PROFILE.headline);
+    setLocation(VERIFIED_DEMO_PROFILE.location);
+    setCollegeName(VERIFIED_DEMO_PROFILE.collegeName);
+    setDegree(VERIFIED_DEMO_PROFILE.degree);
+    setBranch(VERIFIED_DEMO_PROFILE.branch);
+    setGradYear(VERIFIED_DEMO_PROFILE.graduationYear);
+    setCgpa(VERIFIED_DEMO_PROFILE.cgpa);
+    setGithubUser(VERIFIED_DEMO_PROFILE.github);
+    setCodingPlatformType(VERIFIED_DEMO_PROFILE.codingPlatformType);
+    setCodingPlatform(VERIFIED_DEMO_PROFILE.codingPlatform);
+    setCodingProblemsSolved(VERIFIED_DEMO_PROFILE.codingProblemsSolved);
+    setLinkedinUrl(VERIFIED_DEMO_PROFILE.linkedin);
+    setTargetRole(VERIFIED_DEMO_PROFILE.role);
+    setSkills(VERIFIED_DEMO_PROFILE.skills);
+    setProjectName(VERIFIED_DEMO_PROFILE.projectName);
+    setProjectUrl(VERIFIED_DEMO_PROFILE.projectUrl);
     setResumeFile(null);
     setFileError(null);
-    setStatus('idle');
   };
 
+  // Reset all fields completely
   const handleResetForm = () => {
     setCandidateName('');
     setEmail('');
@@ -189,8 +144,8 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
     setLocation('');
     setCollegeName('');
     setDegree('B.Tech');
-    setBranch('Computer Science');
-    setGradYear('2026');
+    setBranch('');
+    setGradYear('');
     setCgpa('');
     setGithubUser('');
     setCodingPlatformType('LeetCode');
@@ -228,7 +183,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
 
   const handleStartAnalysis = async () => {
     if (!candidateName.trim()) {
-      alert('Please provide the candidate name.');
+      alert('Please enter candidate name.');
       return;
     }
 
@@ -405,47 +360,44 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
         </button>
 
         <span className="label-caps" style={{ color: 'var(--accent-warm)' }}>
-          PROFIQ TELEMETRY INTAKE // BACKEND DATA HUB
+          ProfiQ Telemetry Intake · Candidate Profile Audit
         </span>
-        <h2 style={{ fontSize: '1.65rem', marginTop: '0.25rem', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+        <h2 style={{ fontSize: '1.65rem', marginTop: '0.25rem', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
           Analyse Profile Readiness
         </h2>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
-          Connect multi-source evidence—Resume/CV documents, academic background, GitHub telemetry, and competitive coding signals.
+        <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: '1.5' }}>
+          Connect multi-source evidence: resume documents, academic background, GitHub telemetry, and competitive coding signals.
         </p>
 
         {status === 'idle' && (
           <div>
-            {/* Quick Presets Bar */}
-            <div style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-soft)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span className="label-caps">Select Quick Preset Profile</span>
-                <button 
-                  type="button"
-                  onClick={handleResetForm}
-                  style={{ background: 'none', border: 'none', color: 'var(--accent-warm)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
-                >
-                  + New Custom Candidate
-                </button>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                {DEMO_PROFILES.map((p) => (
-                  <button
-                    key={p.name}
-                    type="button"
-                    className={`btn btn-sm ${candidateName === p.name ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => handleSelectPreset(p)}
-                  >
-                    {p.name} ({p.role.split(' ')[0]})
-                  </button>
-                ))}
-              </div>
+            {/* Quick Profile Actions Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.9rem', borderBottom: '1px solid var(--border-soft)', flexWrap: 'wrap', gap: '0.65rem' }}>
+              <button 
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleLoadDemoProfile}
+                style={{ borderRadius: '6px', padding: '0.5rem 1.1rem', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}
+              >
+                <Sparkles size={14} />
+                Load Verified Demo Candidate
+              </button>
+              
+              <button 
+                type="button"
+                onClick={handleResetForm}
+                className="btn btn-sm btn-secondary"
+                style={{ borderRadius: '6px', padding: '0.5rem 0.9rem', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <RotateCcw size={13} />
+                Reset All Fields
+              </button>
             </div>
 
             {/* SECTION 1: IDENTITY & CONTACT */}
             <div style={{ marginBottom: '1.5rem' }}>
               <span className="label-caps" style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '0.75rem' }}>
-                1. Candidate Identity & Contact
+                1. Candidate Identity &amp; Contact
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
@@ -455,7 +407,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={candidateName}
                     onChange={(e) => setCandidateName(e.target.value)}
-                    placeholder="e.g. Alex Morgan"
+                    placeholder="Full name"
                     required
                   />
                 </div>
@@ -467,7 +419,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. alex.morgan@example.com"
+                    placeholder="Email address"
                   />
                 </div>
 
@@ -478,7 +430,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={headline}
                     onChange={(e) => setHeadline(e.target.value)}
-                    placeholder="e.g. Senior Full-Stack Engineer"
+                    placeholder="Professional headline"
                   />
                 </div>
 
@@ -489,7 +441,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g. Bengaluru, India"
+                    placeholder="Location"
                   />
                 </div>
               </div>
@@ -508,18 +460,18 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={collegeName}
                     onChange={(e) => setCollegeName(e.target.value)}
-                    placeholder="e.g. IIT Madras"
+                    placeholder="College / University"
                   />
                 </div>
 
                 <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Degree & Branch</label>
+                  <label className="form-label">Degree &amp; Branch</label>
                   <input
                     type="text"
                     className="form-input"
                     value={branch ? `${degree} ${branch}` : degree}
                     onChange={(e) => setBranch(e.target.value)}
-                    placeholder="e.g. B.Tech Computer Science"
+                    placeholder="Degree &amp; Branch"
                   />
                 </div>
 
@@ -530,7 +482,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={gradYear}
                     onChange={(e) => setGradYear(e.target.value)}
-                    placeholder="e.g. 2024"
+                    placeholder="Graduation year"
                     min="1970"
                     max="2035"
                   />
@@ -544,7 +496,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={cgpa}
                     onChange={(e) => setCgpa(e.target.value)}
-                    placeholder="e.g. 8.9"
+                    placeholder="CGPA (0 - 10)"
                     min="0"
                     max="10"
                   />
@@ -651,7 +603,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
             {/* SECTION 4: CODE SIGNALS & TARGET ROLE */}
             <div style={{ marginBottom: '1.5rem' }}>
               <span className="label-caps" style={{ color: 'var(--text-primary)', display: 'block', marginBottom: '0.75rem' }}>
-                4. Engineering Signals & Role Alignment
+                4. Engineering Signals &amp; Role Alignment
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
                 <div className="form-group" style={{ marginBottom: 0 }}>
@@ -676,7 +628,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={githubUser}
                     onChange={(e) => setGithubUser(e.target.value)}
-                    placeholder="e.g. github.com/username or alex_dev"
+                    placeholder="GitHub username or profile URL"
                   />
                 </div>
 
@@ -687,7 +639,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={linkedinUrl}
                     onChange={(e) => setLinkedinUrl(e.target.value)}
-                    placeholder="e.g. linkedin.com/in/username"
+                    placeholder="LinkedIn profile URL"
                   />
                 </div>
               </div>
@@ -696,7 +648,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
               <div style={{ marginTop: '1rem', padding: '1rem', background: '#FFFFFF', border: '1px solid var(--border-medium)', borderRadius: '4px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                   <span className="label-caps" style={{ color: 'var(--accent-warm)' }}>
-                    Competitive Coding & Algorithmic Rigor Link *
+                    Competitive Coding &amp; Algorithmic Rigor Link
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     Measured in 20% DSA score weighting
@@ -717,13 +669,13 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     </select>
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
-                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Profile Link or Handle *</label>
+                    <label className="form-label" style={{ fontSize: '0.75rem' }}>Profile Link or Handle</label>
                     <input
                       type="text"
                       className="form-input"
                       value={codingPlatform}
                       onChange={(e) => setCodingPlatform(e.target.value)}
-                      placeholder={`e.g. ${codingPlatformType === 'LeetCode' ? 'https://leetcode.com/u/alex_dev' : 'https://codeforces.com/profile/alex_dev'}`}
+                      placeholder="Profile link or username"
                     />
                   </div>
                   <div>
@@ -733,7 +685,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                       className="form-input"
                       value={codingProblemsSolved}
                       onChange={(e) => setCodingProblemsSolved(e.target.value)}
-                      placeholder="e.g. 280"
+                      placeholder="Problems count"
                       min="0"
                     />
                   </div>
@@ -741,7 +693,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                 {codingPlatform && (
                   <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--accent-sage)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <CheckCircle size={12} />
-                    <span>Active Verification Link: <strong className="mono-token">{formatCodingUrl(codingPlatformType, codingPlatform)}</strong></span>
+                    <span>Active Verification Link: <strong>{formatCodingUrl(codingPlatformType, codingPlatform)}</strong></span>
                   </div>
                 )}
               </div>
@@ -753,7 +705,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                   className="form-input"
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
-                  placeholder="e.g. React, TypeScript, Node.js, PostgreSQL, Docker, Redis"
+                  placeholder="Technical competencies (comma-separated)"
                 />
               </div>
 
@@ -765,7 +717,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="e.g. CloudFlow Scalable Engine"
+                    placeholder="Project name"
                   />
                 </div>
 
@@ -776,7 +728,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                     className="form-input"
                     value={projectUrl}
                     onChange={(e) => setProjectUrl(e.target.value)}
-                    placeholder="e.g. https://github.com/user/project"
+                    placeholder="Repository or live URL"
                   />
                 </div>
               </div>
@@ -798,7 +750,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
             <h3 style={{ fontSize: '1.35rem', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
               Processing Candidate Telemetry...
             </h3>
-            <p className="mono-token" style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '480px', margin: '0 auto' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '480px', margin: '0 auto' }}>
               {pipelineSteps[currentStep]}
             </p>
 
@@ -823,7 +775,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
           <div style={{ padding: '0.5rem 0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--accent-sage)', marginBottom: '1.25rem' }}>
               <CheckCircle size={24} />
-              <strong style={{ fontSize: '1.15rem' }}>Audit Completed & Telemetry Ingested</strong>
+              <strong style={{ fontSize: '1.15rem' }}>Audit Completed &amp; Telemetry Ingested</strong>
             </div>
 
             {/* METER OF ACCEPTANCE */}
@@ -839,7 +791,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
                   <span className="label-caps">Composite Assessment</span>
-                  <div className="mono-token" style={{ fontSize: '2.5rem', fontWeight: 800 }}>
+                  <div style={{ fontSize: '2.5rem', fontWeight: 800 }}>
                     {persistedProfile?.analysis?.readinessScore || 78}
                     <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)' }}>/100</span>
                   </div>
@@ -861,7 +813,7 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
                 </div>
                 <div>
                   <span style={{ color: 'var(--text-muted)', display: 'block' }}>Backend Record ID:</span>
-                  <span className="mono-token" style={{ fontWeight: 600 }}>
+                  <span style={{ fontWeight: 600 }}>
                     #{persistedProfile?._id ? persistedProfile._id.slice(-6).toUpperCase() : '8492'}
                   </span>
                 </div>
@@ -896,16 +848,44 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
               )}
             </div>
 
-            <button
-              className="btn btn-primary"
-              style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem' }}
-              onClick={() => {
-                onClose();
-                onCompleteAudit(persistedProfile);
-              }}
-            >
-              Open Full Intelligence Dashboard →
-            </button>
+            {/* Action Buttons: Open Dashboard, Re-evaluate Profile, or Start Fresh Assessment */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <button
+                className="btn btn-primary"
+                style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem' }}
+                onClick={() => {
+                  onClose();
+                  onCompleteAudit(persistedProfile);
+                }}
+              >
+                Open Full Intelligence Dashboard →
+              </button>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ padding: '0.65rem', fontSize: '0.82rem', borderRadius: '6px', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '0.35rem' }}
+                  onClick={() => setStatus('idle')}
+                >
+                  <RotateCcw size={13} />
+                  Re-evaluate Profile
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  style={{ padding: '0.65rem', fontSize: '0.82rem', borderRadius: '6px', color: 'var(--text-muted)', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '0.35rem' }}
+                  onClick={() => {
+                    handleResetForm();
+                    setStatus('idle');
+                  }}
+                >
+                  <X size={13} />
+                  Start Fresh Assessment
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

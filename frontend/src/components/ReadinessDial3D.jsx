@@ -110,7 +110,7 @@ export default function ReadinessDial3D({ score = 78 }) {
         const tx = cx + Math.cos(angle) * textR;
         const ty = cy + Math.sin(angle) * textR;
         ctx.fillStyle = '#9E9D96';
-        ctx.font = '500 24px "JetBrains Mono", monospace';
+        ctx.font = '600 24px "Plus Jakarta Sans", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(i.toString(), tx, ty);
