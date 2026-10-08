@@ -57,6 +57,45 @@ export const ROLE_TAXONOMY = {
   },
 };
 
+function isMeaningfulString(val) {
+  if (!val || typeof val !== 'string') return false;
+  const trimmed = val.trim().toLowerCase();
+  return trimmed !== '' && trimmed !== '0' && trimmed !== 'none' && trimmed !== 'n/a' && trimmed !== 'na' && trimmed !== 'nil' && trimmed !== 'null' && trimmed !== '-';
+}
+
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function skillMatches(candidateSkill, requiredSkill) {
+  const cs = String(candidateSkill || '').trim().toLowerCase();
+  const req = String(requiredSkill || '').trim().toLowerCase();
+  if (!cs || !req) return false;
+  if (!isMeaningfulString(cs)) return false;
+  if (cs === req) return true;
+  // For short tokens (e.g. 'c', 'r', 'go', 'js', 'ts'), require exact match only
+  if (cs.length <= 3 || req.length <= 3) {
+    return cs === req;
+  }
+  const reqPattern = new RegExp(`(?:^|[^a-zA-Z0-9+#])${escapeRegex(req)}(?:$|[^a-zA-Z0-9+#])`, 'i');
+  const csPattern = new RegExp(`(?:^|[^a-zA-Z0-9+#])${escapeRegex(cs)}(?:$|[^a-zA-Z0-9+#])`, 'i');
+  return reqPattern.test(cs) || csPattern.test(req);
+}
+
+function documentContainsSkill(docText, reqSkill) {
+  if (!docText || !docText.trim()) return false;
+  const req = String(reqSkill || '').trim().toLowerCase();
+  if (!req) return false;
+  const pattern = new RegExp(`(?:^|[^a-zA-Z0-9+#])${escapeRegex(req)}(?:$|[^a-zA-Z0-9+#])`, 'i');
+  const match = pattern.exec(docText);
+  if (!match) return false;
+  const pre = docText.substring(Math.max(0, match.index - 60), match.index);
+  if (/\b(?:no|never|not|without|0|zero|haven't|havenot|don't)\s+(?:experience\s+(?:with|in)\s+|projects?\s+(?:in|with)\s+)?$/i.test(pre)) {
+    return false;
+  }
+  return true;
+}
+
 export function evaluateProfile(profile) {
   const targetRoleName = profile?.targetRole?.roleName || 'Full Stack Developer';
   const roleData = ROLE_TAXONOMY[targetRoleName] || ROLE_TAXONOMY['Full Stack Developer'];
@@ -64,42 +103,59 @@ export function evaluateProfile(profile) {
   // Normalize candidate's skills
   const candidateSkills = (profile?.skills || []).map((s) =>
     (typeof s === 'string' ? s : s?.name || '').trim().toLowerCase()
-  ).filter(Boolean);
+  ).filter((s) => isMeaningfulString(s));
 
   let documentText = '';
   if (profile?.documents && profile.documents.length > 0) {
     documentText = profile.documents.map((d) => d.extractedText || '').join(' ').toLowerCase();
   }
 
-  // 1. Skill Alignment Aspect (35%)
+  // 1. Skill Alignment Aspect (35%) - Strict boundary matching, no false substring claims
   const matchedCoreSkills = roleData.coreSkills.filter((req) => {
-    return candidateSkills.some((cs) => cs.includes(req) || req.includes(cs)) ||
-      (documentText && documentText.includes(req));
+    return candidateSkills.some((cs) => skillMatches(cs, req)) ||
+      documentContainsSkill(documentText, req);
   });
 
-  const skillMatchRatio = Math.min(100, Math.round((matchedCoreSkills.length / Math.max(roleData.coreSkills.length * 0.65, 1)) * 100));
-  const skillScore = Math.max(25, Math.min(98, skillMatchRatio));
+  const skillMatchRatio = matchedCoreSkills.length === 0 ? 0 : Math.min(100, Math.round((matchedCoreSkills.length / Math.max(roleData.coreSkills.length * 0.65, 1)) * 100));
+  const skillScore = skillMatchRatio;
 
-  // 2. Project Evidence & GitHub Aspect (25%)
-  let projectPoints = 30;
-  const projects = profile?.projects || [];
-  if (projects.length >= 1) projectPoints += 20;
-  if (projects.length >= 2) projectPoints += 15;
-  if (projects.some((p) => p.githubUrl || p.liveUrl)) projectPoints += 15;
-  if (profile?.github?.username || profile?.github?.profileUrl) projectPoints += 15;
-  const projectScore = Math.max(25, Math.min(98, projectPoints));
+  // 2. Project Evidence & GitHub Aspect (25%) - 0 points if no real projects and no GitHub
+  const projects = (profile?.projects || []).filter((p) => {
+    const name = typeof p === 'string' ? p : p?.name;
+    return isMeaningfulString(name);
+  });
+  const ghUser = profile?.github?.username;
+  const ghUrl = profile?.github?.profileUrl;
+  const hasGithub = Boolean(
+    (isMeaningfulString(ghUser) && !['0', 'none', 'n/a'].includes(ghUser.toLowerCase())) ||
+    (isMeaningfulString(ghUrl) && ghUrl.includes('github.com'))
+  );
 
-  // 3. Coding Platform & DSA Rigor Aspect (20%)
-  let codingScore = 35;
-  const codingProfiles = profile?.codingProfiles || [];
+  let projectScore = 0;
+  if (projects.length > 0 || hasGithub) {
+    let projectPoints = 20;
+    if (projects.length >= 1) projectPoints += 25;
+    if (projects.length >= 2) projectPoints += 15;
+    if (projects.some((p) => isMeaningfulString(p?.githubUrl) || isMeaningfulString(p?.liveUrl))) projectPoints += 20;
+    if (hasGithub) projectPoints += 15;
+    projectScore = Math.min(98, projectPoints);
+  }
+
+  // 3. Coding Platform & DSA Rigor Aspect (20%) - 0 points if 0 problems or no profile
+  let codingScore = 0;
+  const codingProfiles = (profile?.codingProfiles || []).filter((cp) => {
+    const handle = cp?.username || cp?.profileUrl;
+    return isMeaningfulString(handle);
+  });
   const primaryCoding = codingProfiles[0];
 
-  if (primaryCoding && (primaryCoding.profileUrl || primaryCoding.username)) {
-    codingScore = 65;
-    const solved = primaryCoding.problemsSolved;
-    const rating = primaryCoding.rating;
+  if (primaryCoding) {
+    const solved = typeof primaryCoding.problemsSolved === 'number' ? primaryCoding.problemsSolved : parseInt(primaryCoding.problemsSolved, 10);
+    const rating = typeof primaryCoding.rating === 'number' ? primaryCoding.rating : parseInt(primaryCoding.rating, 10);
 
-    if (solved >= 400 || rating >= 1850) {
+    if ((isNaN(solved) || solved <= 0) && (isNaN(rating) || rating <= 0)) {
+      codingScore = 0;
+    } else if (solved >= 400 || rating >= 1850) {
       codingScore = 96;
     } else if (solved >= 250 || rating >= 1650) {
       codingScore = 88;
@@ -107,27 +163,51 @@ export function evaluateProfile(profile) {
       codingScore = 78;
     } else if (solved >= 50) {
       codingScore = 72;
+    } else if (solved > 0) {
+      codingScore = Math.min(65, Math.round((solved / 50) * 65));
+    } else if (!isNaN(rating) && rating > 0) {
+      codingScore = Math.min(65, Math.round((rating / 1450) * 65));
+    } else {
+      codingScore = 0;
     }
   }
 
-  // 4. Academic Rigor Aspect (10%)
-  let academicScore = 70;
-  const cgpa = profile?.college?.cgpa;
-  if (cgpa !== undefined && cgpa !== null) {
+  // 4. Academic Rigor Aspect (10%) - 0 points if 0 CGPA or no college info
+  let academicScore = 0;
+  const college = profile?.college;
+  const collegeName = college?.name || college?.collegeName;
+  const hasCollegeName = isMeaningfulString(collegeName);
+  const rawCgpa = college?.cgpa;
+  const cgpa = typeof rawCgpa === 'number' ? rawCgpa : (rawCgpa ? parseFloat(rawCgpa) : undefined);
+
+  if (hasCollegeName && cgpa !== undefined && !isNaN(cgpa)) {
+    if (cgpa <= 0) academicScore = 0;
+    else if (cgpa >= 9.0) academicScore = 95;
+    else if (cgpa >= 8.0) academicScore = 85;
+    else if (cgpa >= 7.0) academicScore = 75;
+    else if (cgpa >= 6.0) academicScore = 60;
+    else academicScore = 45;
+  } else if (hasCollegeName && (cgpa === undefined || isNaN(cgpa))) {
+    academicScore = 50;
+  } else if (cgpa !== undefined && !isNaN(cgpa) && cgpa > 0) {
     if (cgpa >= 9.0) academicScore = 95;
     else if (cgpa >= 8.0) academicScore = 85;
     else if (cgpa >= 7.0) academicScore = 75;
     else if (cgpa >= 6.0) academicScore = 60;
     else academicScore = 45;
+  } else {
+    academicScore = 0;
   }
 
-  // 5. Document Rigor Aspect (10%)
-  let docScore = 40;
-  const documents = profile?.documents || [];
+  // 5. Document Rigor Aspect (10%) - 0 points if no documents uploaded
+  let docScore = 0;
+  const documents = (profile?.documents || []).filter((d) => {
+    return d && (d.fileUrl || d.extractedText || (d.fileSize && d.fileSize > 0));
+  });
   if (documents.length > 0) {
-    docScore = 70;
+    docScore = 60;
     if (documents.some((d) => d.extractionStatus === 'completed' && (d.fileSize || 0) > 0)) {
-      docScore = 92;
+      docScore = 90;
     }
   }
 
@@ -175,10 +255,10 @@ export function evaluateProfile(profile) {
 
   // Competency Matrix
   const defaultCompetencies = [
-    { name: candidateSkills[0] ? candidateSkills[0].toUpperCase() : 'Core Stack', level: readinessScore > 75 ? 'Strong' : 'Developing', score: Math.min(95, skillScore + 5), status: 'Verified', color: 'var(--accent-sage)' },
-    { name: candidateSkills[1] ? candidateSkills[1].toUpperCase() : 'Architecture', level: readinessScore > 70 ? 'Mid' : 'Junior', score: Math.min(90, skillScore - 3), status: 'Verified', color: 'var(--accent-sage)' },
-    { name: primaryCoding?.platform || 'DSA & Algorithms', level: codingScore > 75 ? 'Proficient' : 'Developing', score: codingScore, status: codingScore > 70 ? 'Strong' : 'Attention', color: codingScore > 70 ? 'var(--accent-sage)' : 'var(--accent-warm)' },
-    { name: 'System Design & CI/CD', level: projectScore > 70 ? 'Applied' : 'Novice', score: Math.max(35, projectScore - 12), status: projectScore > 70 ? 'Developing' : 'Attention', color: 'var(--accent-gold)' },
+    { name: candidateSkills[0] ? candidateSkills[0].toUpperCase() : 'Core Stack', level: skillScore > 75 ? 'Strong' : skillScore > 0 ? 'Developing' : 'Novice', score: skillScore, status: skillScore > 0 ? 'Verified' : 'Attention', color: skillScore > 0 ? 'var(--accent-sage)' : 'var(--accent-warm)' },
+    { name: candidateSkills[1] ? candidateSkills[1].toUpperCase() : 'Architecture', level: skillScore > 70 ? 'Mid' : skillScore > 0 ? 'Junior' : 'Novice', score: Math.max(0, skillScore - 3), status: skillScore > 0 ? 'Verified' : 'Attention', color: skillScore > 0 ? 'var(--accent-sage)' : 'var(--accent-warm)' },
+    { name: primaryCoding?.platform || 'DSA & Algorithms', level: codingScore > 75 ? 'Proficient' : codingScore > 0 ? 'Developing' : 'Novice', score: codingScore, status: codingScore > 70 ? 'Strong' : 'Attention', color: codingScore > 70 ? 'var(--accent-sage)' : 'var(--accent-warm)' },
+    { name: 'System Design & CI/CD', level: projectScore > 70 ? 'Applied' : projectScore > 0 ? 'Developing' : 'Novice', score: projectScore, status: projectScore > 70 ? 'Developing' : 'Attention', color: projectScore > 70 ? 'var(--accent-gold)' : 'var(--accent-warm)' },
   ];
 
   // Tailored recommendations
@@ -220,12 +300,15 @@ export function evaluateProfile(profile) {
       status: `Target Role (${acceptanceVerdict})`,
       gapDays: readinessScore >= 80 ? '0 days' : readinessScore >= 65 ? '15 days' : '45 days',
     },
-    ...roleData.alternateRoles.map((alt) => ({
-      role: alt.role,
-      match: Math.max(30, Math.min(95, readinessScore + alt.matchOffset)),
-      status: (readinessScore + alt.matchOffset) >= 75 ? 'Qualified Transfer' : 'Requires Upskilling',
-      gapDays: alt.gapDays,
-    })),
+    ...roleData.alternateRoles.map((alt) => {
+      const altMatch = readinessScore === 0 ? 0 : Math.max(0, Math.min(95, readinessScore + alt.matchOffset));
+      return {
+        role: alt.role,
+        match: altMatch,
+        status: altMatch >= 75 ? 'Qualified Transfer' : 'Requires Upskilling',
+        gapDays: alt.gapDays,
+      };
+    }),
   ];
 
   // Custom 5-step milestone roadmap

@@ -193,48 +193,66 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
     const cleanCodingHandle = extractCleanHandle(codingPlatform);
     const formattedCodingUrl = formatCodingUrl(codingPlatformType, codingPlatform);
 
-    const formattedGithub = githubUser.trim() ? (
+    const isMeaningfulInput = (val) => {
+      if (!val || typeof val !== 'string') return false;
+      const trimmed = val.trim().toLowerCase();
+      return trimmed !== '' && trimmed !== '0' && trimmed !== 'none' && trimmed !== 'n/a' && trimmed !== 'na' && trimmed !== 'nil' && trimmed !== 'null' && trimmed !== '-';
+    };
+
+    const hasMeaningfulCollege = isMeaningfulInput(collegeName);
+    const parsedCgpa = cgpa !== '' && cgpa !== undefined ? parseFloat(cgpa) : undefined;
+    const hasMeaningfulGithub = isMeaningfulInput(githubUser) && !['0', 'none', 'n/a'].includes(githubUser.trim().toLowerCase());
+    const hasMeaningfulCoding = isMeaningfulInput(codingPlatform) && !['0', 'none', 'n/a'].includes(codingPlatform.trim().toLowerCase());
+    const parsedSolved = codingProblemsSolved !== '' && codingProblemsSolved !== undefined ? parseInt(codingProblemsSolved, 10) : 0;
+    const hasMeaningfulProject = isMeaningfulInput(projectName);
+
+    const formattedGithub = hasMeaningfulGithub ? (
       githubUser.trim().startsWith('http') ? githubUser.trim() : `https://github.com/${extractCleanHandle(githubUser)}`
     ) : undefined;
 
-    const formattedLinkedin = linkedinUrl.trim() ? (
+    const formattedLinkedin = isMeaningfulInput(linkedinUrl) ? (
       linkedinUrl.trim().startsWith('http') ? linkedinUrl.trim() : `https://linkedin.com/in/${extractCleanHandle(linkedinUrl)}`
     ) : undefined;
 
-    const formattedProjectUrl = projectUrl.trim() ? (
+    const formattedProjectUrl = isMeaningfulInput(projectUrl) ? (
       projectUrl.trim().startsWith('http') ? projectUrl.trim() : `https://${projectUrl.trim()}`
     ) : undefined;
 
     const profilePayload = {
       basicInfo: {
-        name: candidateName.trim(),
-        email: email.trim() || undefined,
-        headline: headline.trim() || undefined,
-        location: location.trim() || undefined,
+        name: candidateName.trim() || 'Candidate',
+        email: isMeaningfulInput(email) ? email.trim() : undefined,
+        headline: isMeaningfulInput(headline) ? headline.trim() : undefined,
+        location: isMeaningfulInput(location) ? location.trim() : undefined,
       },
-      college: collegeName.trim() ? {
+      college: hasMeaningfulCollege ? {
         name: collegeName.trim(),
-        degree: degree.trim() || 'B.Tech',
-        branch: branch.trim() || 'Computer Science',
-        graduationYear: gradYear ? parseInt(gradYear, 10) : undefined,
-        cgpa: cgpa ? parseFloat(cgpa) : undefined,
-      } : undefined,
-      github: githubUser.trim() ? {
+        degree: isMeaningfulInput(degree) ? degree.trim() : 'B.Tech',
+        branch: isMeaningfulInput(branch) ? branch.trim() : 'Computer Science',
+        graduationYear: gradYear && parseInt(gradYear, 10) > 0 ? parseInt(gradYear, 10) : undefined,
+        cgpa: !isNaN(parsedCgpa) ? parsedCgpa : undefined,
+      } : (!isNaN(parsedCgpa) && parsedCgpa > 0 ? {
+        name: 'University',
+        degree: 'B.Tech',
+        branch: 'Computer Science',
+        cgpa: parsedCgpa,
+      } : undefined),
+      github: hasMeaningfulGithub ? {
         username: extractCleanHandle(githubUser),
         profileUrl: formattedGithub,
       } : undefined,
       targetRole: {
         roleName: targetRole,
       },
-      codingProfiles: codingPlatform.trim() ? [
+      codingProfiles: hasMeaningfulCoding ? [
         {
           platform: codingPlatformType,
           username: cleanCodingHandle || 'candidate_dev',
           profileUrl: formattedCodingUrl,
-          problemsSolved: codingProblemsSolved ? parseInt(codingProblemsSolved, 10) : undefined,
+          problemsSolved: !isNaN(parsedSolved) ? Math.max(0, parsedSolved) : 0,
         }
       ] : [],
-      professionalProfiles: linkedinUrl.trim() ? [
+      professionalProfiles: isMeaningfulInput(linkedinUrl) ? [
         {
           platform: 'LinkedIn',
           url: formattedLinkedin,
@@ -244,13 +262,13 @@ export default function ProfileAnalysisModal({ isOpen, onClose, onCompleteAudit 
         name: s.trim(),
         category: 'Technical',
         source: 'self-reported',
-      })).filter((s) => s.name) : [],
-      projects: projectName.trim() ? [
+      })).filter((s) => isMeaningfulInput(s.name)) : [],
+      projects: hasMeaningfulProject ? [
         {
           name: projectName.trim(),
           description: 'Key technical project',
-          technologies: skills ? skills.split(',').slice(0, 3).map((s) => s.trim()) : [],
-          githubUrl: formattedProjectUrl,
+          technologies: skills ? skills.split(',').slice(0, 3).map((s) => s.trim()).filter(isMeaningfulInput) : [],
+          githubUrl: isMeaningfulInput(projectUrl) ? formattedProjectUrl : undefined,
         }
       ] : [],
     };
